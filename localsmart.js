@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const net = require('net');
 const pump = require('pump');
 const noisePeer = require('noise-peer');
+const utp = require('utp-native');
 const fs = require('fs');
 const sodium = require('sodium-native');
 const argv = require('minimist')(process.argv.slice(2));
@@ -45,16 +46,17 @@ swarm.once('connection', (socket, info) => {
 
   console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer, info.peer);
 
+  let serverUtp = utp();
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
 
     let newSocket;
     if (info.client) {
-      newSocket = reuseFirstSocket ? socket : net.connect(socket.remotePort, socket.remoteAddress);
-      /*if (!reuseFirstSocket) {
+      newSocket = reuseFirstSocket ? socket : (info.type === 'tcp' ? net : serverUtp).connect(socket.remotePort, socket.remoteAddress);
+      if (!reuseFirstSocket) {
         if (info.type === 'tcp') newSocket.setNoDelay(true);
-        newSocket.on('end', () => newSocket.end());
-      }*/
+        else newSocket.on('end', () => newSocket.end());
+      }
       reuseFirstSocket = false;
     } else {
       throw new Error('client is not client?');
