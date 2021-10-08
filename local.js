@@ -50,6 +50,8 @@ swarm.once('connection', (socket, info) => {
     remoteStaticKey: serverPublicKey
   });
 
+  socketSecure.setKeepAlive(true);
+
   /*socketSecure.on('close', () => {
     console.log('socketSecure closed');
     swarm.destroy();
