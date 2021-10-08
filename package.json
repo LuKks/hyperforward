@@ -1,0 +1,36 @@
+{
+  "name": "hyperforward",
+  "version": "0.1.0",
+  "description": "Hyperswarm (p2p) + Noise Protocol (e2e encrypted)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "hyperforward": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuKks/hyperforward.git"
+  },
+  "author": "Lucas Barrena <lucasbarrena@hotmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LuKks/hyperforward/issues"
+  },
+  "homepage": "https://github.com/LuKks/hyperforward#readme",
+  "keywords": [
+    "hyper",
+    "forward",
+    "p2p",
+    "e2e",
+    "encrypted"
+  ],
+  "dependencies": {
+    "hyperswarm": "^2.15.3",
+    "minimist": "^1.2.5",
+    "noise-peer": "^2.1.1",
+    "pump": "^3.0.0",
+    "sodium-native": "^3.2.1"
+  }
+}
