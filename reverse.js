@@ -20,15 +20,15 @@ console.log('argv', argv); // argv { _: [], R: '127.0.0.1:3000', clients: 'crst'
 // hyperforward keygen srv
 // => will generate ~/.ssh/noise_srv.pub and ~/.ssh/noise_srv
 
+// []
+// to print a public key:
+// hyperforward print crst
+// => e52fc62ec5ac755f5e6fb41f86db8bdea44a5fa918c44dbf3d4c1a0b1872130f
+
 // [2]
 // for easy usage, save your friend's public key with a custom name (crst has to do the same):
 // hyperforward add crst e52fc62ec5ac755f5e6fb41f86db8bdea44a5fa918c44dbf3d4c1a0b1872130f
 // => will generate ~/.ssh/noise_crst.pub
-
-// []
-// to print a public key:
-// hyperforward print [name]
-// => a44a5fa918c44dbf3d4c1a0b1872130fe52fc62ec5ac755f5e6fb41f86db8bde
 
 // let's say I (lks) have a react app or backend in the port 3000,
 // and I would like to share it with a friend (crst):
