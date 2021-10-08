@@ -7,11 +7,11 @@ console.log(argv);
 let command = argv._[0];
 if (argv.R) {
   command = 'reverse';
-} else if (argv.L) {
+} else if (argv.L && !argv.S && !argv.M) {
   command = 'local';
-} else if (argv.LM) {
+} else if (argv.L && argv.M) {
   command = 'localmultiple';
-} else if (argv.LS) {
+} else if (argv.L && argv.S) {
   command = 'localsmart';
 }
 

@@ -20,7 +20,7 @@ let join = (argv.join || '').trim();
 join = 'noise' + (join ? '_' + join : '');
 console.log('join', join);
 
-let localReverse = (argv.L || '').trim().split(':');
+let localReverse = (argv.M || '').trim().split(':');
 console.log('local', localReverse);
 
 const serverPublicKey = Buffer.from(fs.readFileSync(homedir + '/.ssh/' + join + '.pub', 'utf8'), 'hex');
