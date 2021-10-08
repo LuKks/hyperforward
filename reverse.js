@@ -115,7 +115,12 @@ swarm.on('connection', (socket, info) => {
         // swarm.destroy();
       });
 
-      reversed.on('data', (chunk) => socketSecure.write(chunk));
+      reversed.on('data', (chunk) => {
+        if (!socketSecure || socketSecure.ending || socketSecure.ended || socketSecure.finished || socketSecure.destroyed || socketSecure.closed) {
+          return;
+        }
+        socketSecure.write(chunk);
+      });
     }
 
     reversed.write(chunk);
