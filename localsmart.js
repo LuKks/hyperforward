@@ -53,7 +53,7 @@ swarm.once('connection', (socket, info) => {
       newSocket = reuseFirstSocket ? socket : net.connect(socket.remotePort, socket.remoteAddress);
       if (!reuseFirstSocket) {
         if (info.type === 'tcp') newSocket.setNoDelay(true);
-        else newSocket.on('end', () => newSocket.end());
+        newSocket.on('end', () => newSocket.end());
       }
       reuseFirstSocket = false;
     } else {
