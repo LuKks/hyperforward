@@ -52,9 +52,9 @@ swarm.once('connection', (socket, info) => {
 
     let newSocket;
     if (info.client) {
-      newSocket = reuseFirstSocket ? socket : (info.type === 'tcp' ? net : serverUtp).connect(socket.remotePort, socket.remoteAddress);
+      newSocket = reuseFirstSocket ? socket : (info.type === '' ? net : serverUtp).connect(socket.remotePort, socket.remoteAddress);
       if (!reuseFirstSocket) {
-        if (info.type === 'tcp') newSocket.setNoDelay(true);
+        if (info.type === '') newSocket.setNoDelay(true);
         else newSocket.on('end', () => newSocket.end());
       }
       reuseFirstSocket = false;
