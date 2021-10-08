@@ -2,6 +2,8 @@
 
 const argv = require('minimist')(process.argv.slice(2));
 
+console.log(argv);
+
 let command = argv._[0];
 if (argv.R) {
   command = 'reverse';
