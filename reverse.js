@@ -84,7 +84,7 @@ const swarm = hyperswarm({
 swarm.on('connection', (socket, info) => {
   console.log('connection', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  let socketSec = noisePeer(socket, false, {
+  let socketSecure = noisePeer(socket, false, {
     pattern: 'XK',
     staticKeyPair: serverKeys,
     onstatickey: function (remoteKey, done) {
@@ -97,8 +97,12 @@ swarm.on('connection', (socket, info) => {
     }
   });
 
+  socketSecure.rawStream.setKeepAlive(true);
+
   let reversed = net.connect(reverse[1], reverse[0]);
-  pump(socketSec, reversed, socketSec);
+  pump(socketSecure, reversed, socketSecure);
+
+  reversed.setKeepAlive(true);
 });
 
 swarm.on('disconnection', (socket, info) => {
