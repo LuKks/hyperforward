@@ -97,22 +97,26 @@ swarm.on('connection', (socket, info) => {
     }
   });
 
-  socketSecure.rawStream.setKeepAlive(true, 1000);
-
+  socketSecure.on('error', (err) => {
+    console.log('socketSecure error', err);
+  });
   socketSecure.on('close', () => {
     console.log('socketSecure closed');
     // swarm.destroy();
   });
 
   let reversed = net.connect(reverse[1], reverse[0]);
+  reversed.on('error', (err) => {
+    console.log('reversed error', err);
+  });
   reversed.on('close', () => {
     console.log('reversed closed');
     // swarm.destroy();
   });
 
-  pump(socketSecure, reversed, socketSecure);
-
-  reversed.setKeepAlive(true, 1000);
+  socketSecure.on('data', (chunk) => reversed.write(chunk));
+  reversed.on('data', (chunk) => socketSecure.write(chunk));
+  // pump(socketSecure, reversed, socketSecure);
 });
 
 swarm.on('disconnection', (socket, info) => {
