@@ -43,7 +43,7 @@ let reuseFirstSocket = true;
 swarm.once('connection', (socket, info) => {
   swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
-  console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer, info.peer);
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
@@ -51,6 +51,10 @@ swarm.once('connection', (socket, info) => {
     let newSocket;
     if (info.client) {
       newSocket = reuseFirstSocket ? socket : net.connect(socket.remotePort, socket.remoteAddress);
+      /*if (!reuseFirstSocket) {
+        if (isTCP) socket.setNoDelay(true)
+        else socket.on('end', noHalfOpen)
+      }*/
       reuseFirstSocket = false;
     } else {
       throw new Error('client is not client?');
