@@ -77,10 +77,6 @@ const swarm = hyperswarm({
   announceLocalAddress: true
 });
 
-/*swarm.on('peer', (peer) => {
-  console.log('peer', peer.host, peer.port, 'local?', peer.local);
-});*/
-
 swarm.on('connection', (socket, info) => {
   console.log('connection', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
