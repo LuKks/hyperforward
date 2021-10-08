@@ -108,6 +108,8 @@ swarm.on('connection', (socket, info) => {
   let reversed;
 
   socketSecure.on('data', (chunk) => {
+    console.log('socketSecure data', chunk.length);
+
     if (!reversed || reversed.ending || reversed.ended || reversed.finished || reversed.destroyed || reversed.closed) {
       console.log('recreating reversed');
       reversed = net.connect(reverse[1], reverse[0]);
@@ -120,9 +122,11 @@ swarm.on('connection', (socket, info) => {
       });
 
       reversed.on('data', (chunk) => {
+        console.log('reversed data pre', chunk.length);
         if (!socketSecure || socketSecure.ending || socketSecure.ended || socketSecure.finished || socketSecure.destroyed || socketSecure.closed) {
           return;
         }
+        console.log('reversed data post', chunk.length);
         socketSecure.write(chunk);
       });
     }

@@ -79,11 +79,16 @@ swarm.once('connection', (socket, info) => {
       socketSecure.end();
     });
 
-    rawStream.on('data', (chunk) => socketSecure.write(chunk));
+    rawStream.on('data', (chunk) => {
+      console.log('rawStream data', chunk.length);
+      socketSecure.write(chunk);
+    });
     socketSecure.on('data', (chunk) => {
+      console.log('socketSecure data pre', chunk.length);
       if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
         return;
       }
+      console.log('socketSecure data post', chunk.length);
       rawStream.write(chunk);
     });
 
