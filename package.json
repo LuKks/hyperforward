@@ -31,6 +31,7 @@
     "minimist": "^1.2.5",
     "noise-peer": "^2.1.1",
     "pump": "^3.0.0",
-    "sodium-native": "^3.2.1"
+    "sodium-native": "^3.2.1",
+    "utp-native": "^2.5.3"
   }
 }
