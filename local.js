@@ -58,9 +58,18 @@ swarm.once('connection', (socket, info) => {
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
 
+    rawStream.setKeepAlive(true);
+
     rawStream.on('close', () => {
       console.log('rawStream closed');
-      // swarm.destroy();
+      myLocalServer.close();
+      swarm.destroy();
+    });
+
+    socketSecure.on('close', () => {
+      console.log('socketSecure closed');
+      myLocalServer.close();
+      swarm.destroy();
     });
 
     pump(rawStream, socketSecure, rawStream);
@@ -88,6 +97,7 @@ swarm.on('updated', ({ key }) => {
 
 swarm.on('close', () => {
   console.log('swarm close');
+  process.exit();
 });
 
 swarm.join(topic, {
