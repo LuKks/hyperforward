@@ -111,6 +111,7 @@ swarm.on('updated', ({ key }) => {
 
 swarm.on('close', () => {
   console.log('swarm close');
+  process.exit();
 });
 
 swarm.join(topic, {
