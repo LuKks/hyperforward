@@ -34,81 +34,73 @@ console.log('serverPublicKey', serverPublicKey);
 console.log('clientKeys.publicKey', clientKeys.publicKey);
 console.log('topic', topic);
 
-let myLocalServer = net.createServer(function onconnection (rawStream) {
-  console.log('myLocalServer onconnection');
+const swarm = hyperswarm({
+  announceLocalAddress: true
+});
 
-  const swarm = hyperswarm({
-    announceLocalAddress: true
-  });
-  let alreadyConnected = false;
+swarm.once('connection', (socket, info) => {
+  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
-  swarm.join(topic, {
-    lookup: true,
-    announce: false,
-    maxPeers: 1,
-  });
+  console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  rawStream.on('close', () => {
-    console.log('rawStream closed');
-    swarm.destroy();
+  // client server encrypted
+  let socketSecure = noisePeer(socket, true, {
+    pattern: 'XK',
+    staticKeyPair: clientKeys,
+    remoteStaticKey: serverPublicKey
   });
 
-  swarm.once('connection', (socket, info) => {
-    swarm.leave(topic, () => console.log('swarm leaved (connection)'));
-
-    console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-
-    // client server encrypted
-    let socketSec = noisePeer(socket, true, {
-      pattern: 'XK',
-      staticKeyPair: clientKeys,
-      remoteStaticKey: serverPublicKey
-    });
-
-    pump(rawStream, socketSec, rawStream/*, function (err) {
-      if (err) {
-        console.error('error:', err.message);
-        socketSec.end();
-        myLocalServer && myLocalServer.close();
-        myLocalServer = undefined;
-        swarm.destroy();
-      }
-    }*/);
-
-    socketSec.on('close', () => {
-      console.log('socketSec closed');
-      swarm.destroy();
-    });
-  });
-
-  /*swarm.on('disconnection', (socket, info) => {
-    console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  /*socketSecure.on('close', () => {
+    console.log('socketSecure closed');
     swarm.destroy();
   });*/
 
-  swarm.on('updated', ({ key }) => {
-    console.log('updated', key);
+  let myLocalServer = net.createServer(function onconnection (rawStream) {
+    console.log('myLocalServer onconnection');
 
-    if (!swarm.connections.size) {
-      console.log('keep waiting an incoming connection..');
+    rawStream.on('close', () => {
+      console.log('rawStream closed');
       // swarm.destroy();
-    }
+    });
+
+    pump(rawStream, socketSecure, rawStream);
   });
 
-  swarm.on('close', () => {
-    console.log('swarm close');
+  myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
+    let serverAddress = myLocalServer.address();
+    console.log('local forward:', { address: serverAddress.address, port: serverAddress.port });
   });
 });
 
-myLocalServer.listen(localReverse[1], localReverse[0], function () {
-  console.log('myLocalServer', myLocalServer.address());
+/*swarm.on('disconnection', (socket, info) => {
+  console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  swarm.destroy();
+});*/
+
+swarm.on('updated', ({ key }) => {
+  console.log('updated', key);
+
+  if (!swarm.connections.size) {
+    console.log('keep waiting an incoming connection..');
+    // swarm.destroy();
+  }
+});
+
+swarm.on('close', () => {
+  console.log('swarm close');
+});
+
+swarm.join(topic, {
+  lookup: true,
+  announce: false,
+  // maxPeers: 1,
 });
 
 process.once('SIGINT', function () {
-  myLocalServer.once('close', function () {
+  swarm.once('close', function () {
     process.exit();
   });
-  myLocalServer.close();
+  swarm.destroy();
   setTimeout(() => process.exit(), 2000);
 });
 

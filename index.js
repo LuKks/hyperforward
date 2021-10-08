@@ -2,6 +2,13 @@
 
 const argv = require('minimist')(process.argv.slice(2));
 
-// console.log('./' + argv._[0] + '.js');
+let command = argv._[0];
+if (argv.R) {
+  command = 'reverse';
+} else if (argv.L) {
+  command = 'local';
+} else if (argv.LM) {
+  command = 'localmultiple';
+}
 
-require('./' + argv._[0] + '.js');
+require('./' + command + '.js');
