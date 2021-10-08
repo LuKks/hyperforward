@@ -67,7 +67,7 @@ swarm.once('connection', (socket, info) => {
     });
     rawStream.on('close', () => {
       console.log('rawStream closed');
-      socketSecure.end();
+      socketSecure.destroy();
     });
 
     rawStream.on('data', (chunk) => socketSecure.write(chunk));
