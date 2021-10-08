@@ -60,8 +60,12 @@ swarm.once('connection', (socket, info) => {
       console.log('rawStream closed');
     });
 
-    rawStream.on('data', (chunk) => socketSecure.write(chunk));
+    rawStream.on('data', (chunk) => {
+      console.log('rawStream data', chunk.length);
+      socketSecure.write(chunk);
+    });
     socketSecure.on('data', (chunk) => {
+      console.log('socketSecure data', chunk.length);
       if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
         return;
       }
