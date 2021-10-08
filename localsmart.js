@@ -75,7 +75,7 @@ swarm.once('connection', (socket, info) => {
       console.log('rawStream closed');
     });
     rawStream.on('end', () => {
-      console.log('rawStream closed');
+      console.log('rawStream end');
       socketSecure.end();
     });
 

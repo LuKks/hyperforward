@@ -101,7 +101,7 @@ swarm.on('connection', (socket, info) => {
     // swarm.destroy();
   });
   socketSecure.on('end', () => {
-    console.log('socketSecure closed');
+    console.log('socketSecure end');
     socketSecure.end();
   });
 
