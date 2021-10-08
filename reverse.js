@@ -100,6 +100,10 @@ swarm.on('connection', (socket, info) => {
     console.log('socketSecure closed');
     // swarm.destroy();
   });
+  socketSecure.on('end', () => {
+    console.log('socketSecure closed');
+    socketSecure.end();
+  });
 
   let reversed;
 
