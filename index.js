@@ -9,6 +9,8 @@ if (argv.R) {
   command = 'local';
 } else if (argv.LM) {
   command = 'localmultiple';
+} else if (argv.LS) {
+  command = 'localsmart';
 }
 
 require('./' + command + '.js');
