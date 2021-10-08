@@ -50,20 +50,20 @@ swarm.once('connection', (socket, info) => {
     remoteStaticKey: serverPublicKey
   });
 
-  socketSecure.rawStream.setKeepAlive(true);
+  socketSecure.rawStream.setKeepAlive(true, 1000);
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
 
     rawStream.on('close', () => {
       console.log('rawStream closed');
-      myLocalServer.close();
-      swarm.destroy();
+      // myLocalServer.close();
+      // swarm.destroy();
     });
 
     pump(rawStream, socketSecure, rawStream);
 
-    rawStream.setKeepAlive(true);
+    rawStream.setKeepAlive(true, 1000);
   });
 
   myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
@@ -73,8 +73,8 @@ swarm.once('connection', (socket, info) => {
 
   socketSecure.on('close', () => {
     console.log('socketSecure closed');
-    myLocalServer.close();
-    swarm.destroy();
+    // myLocalServer.close();
+    // swarm.destroy();
   });
 });
 

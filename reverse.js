@@ -97,12 +97,22 @@ swarm.on('connection', (socket, info) => {
     }
   });
 
-  socketSecure.rawStream.setKeepAlive(true);
+  socketSecure.rawStream.setKeepAlive(true, 1000);
+
+  socketSecure.on('close', () => {
+    console.log('socketSecure closed');
+    // swarm.destroy();
+  });
 
   let reversed = net.connect(reverse[1], reverse[0]);
+  reversed.on('close', () => {
+    console.log('reversed closed');
+    // swarm.destroy();
+  });
+
   pump(socketSecure, reversed, socketSecure);
 
-  reversed.setKeepAlive(true);
+  reversed.setKeepAlive(true, 1000);
 });
 
 swarm.on('disconnection', (socket, info) => {
