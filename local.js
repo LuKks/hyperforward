@@ -61,7 +61,13 @@ swarm.once('connection', (socket, info) => {
     });
 
     rawStream.on('data', (chunk) => socketSecure.write(chunk));
-    socketSecure.on('data', (chunk) => rawStream.write(chunk));
+    socketSecure.on('data', (chunk) => {
+      if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
+        return;
+      }
+      rawStream.write(chunk);
+    });
+
     // pump(rawStream, socketSecure, rawStream);
   });
 
