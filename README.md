@@ -2,6 +2,8 @@
 
 Forwarding via Hyperswarm (p2p) + Noise Protocol (e2e encrypted)
 
+Do not use it! I'm currently working on it.
+
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
 ```bash
