@@ -39,10 +39,10 @@ const swarm = hyperswarm({
 });
 
 swarm.once('connection', (socket, info) => {
-
   console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
   socket.on('error', socket.destroy);
+
   swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
   socket.on('error', (err) => console.log('raw socket error', err));
@@ -73,7 +73,7 @@ swarm.once('connection', (socket, info) => {
       rawStream.end();
     });
     socketSecure.on('close', () => {
-      rawStream.end();
+      rawStream.end(); // + should call destroy after end
     });
 
     rawStream.on('data', (chunk) => {
@@ -104,6 +104,10 @@ swarm.once('connection', (socket, info) => {
   });
   socketSecure.on('close', () => {
     console.log('socketSecure closed', info.type);
+  });
+
+  socket.on('end', () => {
+    socketSecure.end();
   });
 });
 
