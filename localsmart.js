@@ -41,18 +41,18 @@ const swarm = hyperswarm({
 
 let reuseFirstSocket = true;
 
-swarm.once('connection', (socket, info) => {
-  console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer, info.peer);
+swarm.once('connection', (connection, info) => {
+  console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  socket.on('error', (err) => console.log('raw socket error', err));
-  socket.on('end', () => console.log('raw socket ended'));
-  socket.on('finish', () => console.log('raw socket finished'));
-  socket.on('close', () => console.log('raw socket closed'));
-  socket.on('error', socket.destroy);
+  connection.on('error', (err) => console.log('raw connection error', err));
+  connection.on('end', () => console.log('raw connection ended'));
+  connection.on('finish', () => console.log('raw connection finished'));
+  connection.on('close', () => console.log('raw connection closed'));
+  connection.on('error', connection.destroy);
 
   swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
-  let socketSecure = noisePeer(socket, true, {
+  let socketSecure = noisePeer(connection, true, {
     pattern: 'XK',
     staticKeyPair: clientKeys,
     remoteStaticKey: serverPublicKey
@@ -131,7 +131,7 @@ swarm.once('connection', (socket, info) => {
     console.log('local forward:', { address: serverAddress.address, port: serverAddress.port });
   });
 
-  socket.noisy = socketSecure;
+  connection.noisy = socketSecure;
 });
 
 swarm.on('disconnection', (socket, info) => {
@@ -161,10 +161,10 @@ process.once('SIGINT', function () {
   swarm.once('close', function () {
     process.exit();
   });
-  for (let socket of swarm.connections) {
-    if (socket.noisy) {
+  for (let connection of swarm.connections) {
+    if (connection.noisy) {
       console.log('sigint before noisy.end()');
-      socket.noisy.end();
+      connection.noisy.end();
     }
   }
   // swarm.destroy();

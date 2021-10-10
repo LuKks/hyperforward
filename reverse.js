@@ -78,16 +78,16 @@ const swarm = hyperswarm({
 });
 
 swarm.on('connection', (connection, info) => {
-  console.log('connection', 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
   // if (info.type === 'tcp') connection.allowHalfOpen = true;
 
-  connection.on('error', (err) => console.log('raw connection error', err));
+  connection.on('error', (err) => console.log(Date.now(), 'raw connection error', err));
   connection.on('error', connection.destroy);
-  connection.on('timeout', () => console.log('raw connection timeout'));
-  connection.on('end', () => console.log('raw connection ended'));
-  connection.on('finish', () => console.log('raw connection finished'));
-  connection.on('close', () => console.log('raw connection closed'));
+  connection.on('timeout', () => console.log(Date.now(), 'raw connection timeout'));
+  connection.on('end', () => console.log(Date.now(), 'raw connection ended'));
+  connection.on('finish', () => console.log(Date.now(), 'raw connection finished'));
+  connection.on('close', () => console.log(Date.now(), 'raw connection closed'));
 
   let noisy = noisePeer(connection, false, {
     pattern: 'XK',
@@ -101,46 +101,51 @@ swarm.on('connection', (connection, info) => {
       return done(new Error('Unauthorized key'));
     }
   });
-  noisy.on('error', (err) => console.log('noisy error', err));
+  noisy.on('error', (err) => console.log(Date.now(), 'noisy error', err));
   noisy.on('error', noisy.destroy);
-  noisy.on('handshake', () => console.log('noisy handshake'));
-  noisy.on('connected', () => console.log('noisy connected'));
-  noisy.on('timeout', () => console.log('noisy timeout'));
-  noisy.on('end', () => console.log('noisy end'));
-  noisy.on('finish', () => console.log('noisy finished'));
-  noisy.on('close', () => console.log('noisy close'));
+  noisy.on('handshake', () => console.log(Date.now(), 'noisy handshake'));
+  noisy.on('connected', () => console.log(Date.now(), 'noisy connected'));
+  noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
+  noisy.on('end', () => console.log(Date.now(), 'noisy end'));
+  noisy.on('finish', () => console.log(Date.now(), 'noisy finished'));
+  noisy.on('close', () => console.log(Date.now(), 'noisy close'));
 
   let reversed = net.connect(reverse[1], reverse[0]);
-  reversed.on('error', (err) => console.log('reversed error', err));
+  reversed.on('error', (err) => console.log(Date.now(), 'reversed error', err));
   reversed.on('error', reversed.destroy);
-  reversed.on('timeout', () => console.log('reversed timeout'));
-  reversed.on('end', () => console.log('reversed ended'));
-  reversed.on('finish', () => console.log('reversed finished'));
-  reversed.on('close', () => console.log('reversed closed'));
+  reversed.on('timeout', () => console.log(Date.now(), 'reversed timeout'));
+  reversed.on('end', () => console.log(Date.now(), 'reversed ended'));
+  reversed.on('finish', () => console.log(Date.now(), 'reversed finished'));
+  reversed.on('close', () => console.log(Date.now(), 'reversed closed'));
   reversed.on('data', (chunk) => {
-    console.log('reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
+    console.log(Date.now(), 'reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
     if (!noisy || noisy.ending || noisy.ended || noisy.finished || noisy.destroyed || noisy.closed) {
       return;
     }
-    console.log('reversed data post', chunk.length);
+    console.log(Date.now(), 'reversed data post', chunk.length);
     noisy.write(chunk);
   });
 
+  noisy.on('finish', () => {
+    console.log(Date.now(), 'noisy end 2');
+    noisy.end();
+  });
+
   noisy.on('end', () => {
-    console.log('noisy end 2');
+    console.log(Date.now(), 'noisy end 2');
     noisy.end();
 
     if (reversed) {
-      console.log('ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
       reversed.end(); // + should call destroy after end is sent
-      console.log('ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
     }
   });
   noisy.on('close', () => {
     if (reversed) {
-      console.log('ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
       reversed.destroy(); // + should call destroy after end is sent
-      console.log('ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
     }
   });
 
@@ -172,22 +177,22 @@ swarm.on('connection', (connection, info) => {
     reversed.write(chunk);
   });
 
-  console.log('after ready connection noisy');
+  console.log(Date.now(), 'after ready connection noisy');
   connection.noisy = noisy;
 
   // pump(noisy, reversed, noisy);
 });
 
 swarm.on('disconnection', (socket, info) => {
-  console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  console.log(Date.now(), 'disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 });
 
 swarm.on('updated', ({ key }) => {
-  console.log('updated', key);
+  console.log(Date.now(), 'updated', key);
 });
 
 swarm.on('close', () => {
-  console.log('swarm close');
+  console.log(Date.now(), 'swarm close');
   process.exit();
 });
 
@@ -200,15 +205,15 @@ process.once('SIGINT', function () {
   swarm.once('close', function () {
     process.exit();
   });
-  for (let socket of swarm.connections) {
-    if (socket.noisy) {
-      console.log('sigint before noisy.end()');
-      socket.noisy.end();
+  for (let connection of swarm.connections) {
+    if (connection.noisy) {
+      console.log(Date.now(), 'sigint before noisy.end()');
+      connection.noisy.end();
     }
   }
   // swarm.destroy();
   setTimeout(() => {
-    console.log('force exit');
+    console.log(Date.now(), 'force exit');
     process.exit();
   }, 2000);
 });
