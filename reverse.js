@@ -80,11 +80,17 @@ const swarm = hyperswarm({
 swarm.on('connection', (socket, info) => {
   console.log('connection', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  let socketSecure = noisePeer(socket, false, {
+  socket.on('error', socket.destroy);
+
+  socket.on('error', (err) => console.log('raw socket error', err));
+  socket.on('end', () => console.log('raw socket ended'));
+  socket.on('close', () => console.log('raw socket closed'));
+
+  let noisy = noisePeer(socket, false, {
     pattern: 'XK',
     staticKeyPair: serverKeys,
     onstatickey: function (remoteKey, done) {
-      // console.log('onstatickey', remoteKey);
+      // console.log('onstatickey', remoteKey.toString('hex'));
       for (let i = 0; i < clientPublicKeys.length; i++) {
         let publicKey = clientPublicKeys[i];
         if (remoteKey.equals(publicKey)) return done();
@@ -92,23 +98,35 @@ swarm.on('connection', (socket, info) => {
       return done(new Error('Unauthorized key'));
     }
   });
-
-  socketSecure.on('error', (err) => {
-    console.log('socketSecure error', err);
-  });
-  socketSecure.on('close', () => {
-    console.log('socketSecure closed');
-    // swarm.destroy();
-  });
-  socketSecure.on('end', () => {
-    console.log('socketSecure end');
-    socketSecure.end();
-  });
+  noisy.on('error', noisy.destroy);
 
   let reversed;
 
-  socketSecure.on('data', (chunk) => {
-    console.log('socketSecure data', chunk.length);
+  noisy.on('error', (err) => {
+    console.log('noisy error', err);
+  });
+  noisy.on('end', () => {
+    console.log('noisy end', info.type);
+
+    if (reversed) {
+      console.log('ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      reversed.end(); // + should call destroy after end is sent
+      console.log('ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+    }
+  });
+  noisy.on('close', () => {
+    console.log('noisy closed');
+    // swarm.destroy();
+
+    if (reversed) {
+      console.log('ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      reversed.end(); // + should call destroy after end is sent
+      console.log('ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+    }
+  });
+
+  noisy.on('data', (chunk) => {
+    console.log('noisy data', chunk.length);
 
     if (!reversed || reversed.ending || reversed.ended || reversed.finished || reversed.destroyed || reversed.closed) {
       console.log('recreating reversed');
@@ -116,26 +134,31 @@ swarm.on('connection', (socket, info) => {
       reversed.on('error', (err) => {
         console.log('reversed error', err);
       });
+      reversed.on('end', () => {
+        console.log('reversed ended');
+      });
       reversed.on('close', () => {
         console.log('reversed closed');
-        // swarm.destroy();
       });
 
       reversed.on('data', (chunk) => {
-        console.log('reversed data pre', chunk.length);
-        if (!socketSecure || socketSecure.ending || socketSecure.ended || socketSecure.finished || socketSecure.destroyed || socketSecure.closed) {
+        console.log('reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
+        if (!noisy || noisy.ending || noisy.ended || noisy.finished || noisy.destroyed || noisy.closed) {
           return;
         }
         console.log('reversed data post', chunk.length);
-        socketSecure.write(chunk);
+        noisy.write(chunk);
       });
+
+      // + should wait for on connect to reversed.write?
     }
 
     reversed.write(chunk);
   });
-  // reversed.on('data', (chunk) => socketSecure.write(chunk));
 
-  // pump(socketSecure, reversed, socketSecure);
+  socket.noisy = noisy;
+
+  // pump(noisy, reversed, noisy);
 });
 
 swarm.on('disconnection', (socket, info) => {
@@ -160,8 +183,17 @@ process.once('SIGINT', function () {
   swarm.once('close', function () {
     process.exit();
   });
+  for (let socket of swarm.connections) {
+    if (socket.noisy) {
+      console.log('sigint before noisy.end()');
+      socket.noisy.end();
+    }
+  }
   swarm.destroy();
-  setTimeout(() => process.exit(), 2000);
+  setTimeout(() => {
+    console.log('force exit');
+    process.exit();
+  }, 2000);
 });
 
 function createHash (algo, name) {
