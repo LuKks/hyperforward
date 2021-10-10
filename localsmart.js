@@ -71,12 +71,12 @@ swarm.once('connection', (socket, info) => {
     rawStream.on('error', (err) => {
       console.log('rawStream error', err);
     });
-    rawStream.on('close', () => {
-      console.log('rawStream closed');
-    });
     rawStream.on('end', () => {
       console.log('rawStream end');
       socketSecure.end();
+    });
+    rawStream.on('close', () => {
+      console.log('rawStream closed');
     });
 
     rawStream.on('data', (chunk) => {
@@ -95,8 +95,12 @@ swarm.once('connection', (socket, info) => {
     socketSecure.on('error', (err) => {
       console.log('socketSecure error', err);
     });
+    socketSecure.on('end', () => {
+      console.log('socketSecure ended', info.type);
+      rawStream.end();
+    });
     socketSecure.on('close', () => {
-      console.log('socketSecure closed');
+      console.log('socketSecure closed', info.type);
     });
   });
 
