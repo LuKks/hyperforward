@@ -42,27 +42,36 @@ const swarm = hyperswarm({
 let reuseFirstSocket = true;
 
 swarm.once('connection', (socket, info) => {
-  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
-
   console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer, info.peer);
 
-  let serverUtp = utp();
+  socket.on('error', (err) => console.log('raw socket error', err));
+  socket.on('end', () => console.log('raw socket ended'));
+  socket.on('close', () => console.log('raw socket closed'));
+  socket.on('error', socket.destroy);
+
+  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
+
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
 
-    let newSocket;
     if (info.client) {
-      newSocket = reuseFirstSocket ? socket : (info.type === 'tcp' ? net : serverUtp).connect(socket.remotePort, socket.remoteAddress);
+      // reuse first socket or connect new one (tcp/utp)
+      socket = reuseFirstSocket ? socket : (info.type === 'tcp' ? net : utp).connect(socket.remotePort, socket.remoteAddress);
       if (!reuseFirstSocket) {
-        if (info.type === 'tcp') newSocket.setNoDelay(true);
-        else newSocket.on('end', () => newSocket.end());
+        if (info.type === 'tcp') socket.setNoDelay(true);
+        else socket.on('end', () => socket.end());
+
+        socket.on('error', (err) => console.log('raw socket error', err));
+        socket.on('end', () => console.log('raw socket ended'));
+        socket.on('close', () => console.log('raw socket closed'));
+        socket.on('error', socket.destroy);
       }
       reuseFirstSocket = false;
     } else {
       throw new Error('client is not client?');
     }
 
-    let socketSecure = noisePeer(newSocket, true, {
+    let socketSecure = noisePeer(socket, true, {
       pattern: 'XK',
       staticKeyPair: clientKeys,
       remoteStaticKey: serverPublicKey
@@ -77,6 +86,7 @@ swarm.once('connection', (socket, info) => {
     });
     rawStream.on('close', () => {
       console.log('rawStream closed');
+      socketSecure.end();
     });
 
     rawStream.on('data', (chunk) => {
