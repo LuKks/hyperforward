@@ -86,6 +86,7 @@ swarm.on('connection', (connection, info) => {
   connection.on('error', connection.destroy);
   connection.on('timeout', () => console.log(Date.now(), 'raw connection timeout'));
   connection.on('end', () => console.log(Date.now(), 'raw connection ended'));
+  connection.on('drain', () => console.log(Date.now(), 'raw connection drained'));
   connection.on('finish', () => console.log(Date.now(), 'raw connection finished'));
   connection.on('close', () => console.log(Date.now(), 'raw connection closed'));
 
@@ -107,6 +108,7 @@ swarm.on('connection', (connection, info) => {
   noisy.on('connected', () => console.log(Date.now(), 'noisy connected'));
   noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
   noisy.on('end', () => console.log(Date.now(), 'noisy end'));
+  noisy.on('drain', () => console.log(Date.now(), 'noisy drained'));
   noisy.on('finish', () => console.log(Date.now(), 'noisy finished'));
   noisy.on('close', () => console.log(Date.now(), 'noisy close'));
 
@@ -115,6 +117,7 @@ swarm.on('connection', (connection, info) => {
   reversed.on('error', reversed.destroy);
   reversed.on('timeout', () => console.log(Date.now(), 'reversed timeout'));
   reversed.on('end', () => console.log(Date.now(), 'reversed ended'));
+  reversed.on('drain', () => console.log(Date.now(), 'reversed drained'));
   reversed.on('finish', () => console.log(Date.now(), 'reversed finished'));
   reversed.on('close', () => console.log(Date.now(), 'reversed closed'));
   reversed.on('data', (chunk) => {
@@ -127,13 +130,12 @@ swarm.on('connection', (connection, info) => {
   });
 
   noisy.on('finish', () => {
-    console.log(Date.now(), 'noisy finished 2');
-    reversed.end();
+    console.log(Date.now(), 'noisy finished 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
+    noisy.end();
   });
 
   noisy.on('end', () => {
-    console.log(Date.now(), 'noisy end 2');
-    noisy.end();
+    console.log(Date.now(), 'noisy end 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
 
     if (reversed) {
       console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
@@ -144,7 +146,7 @@ swarm.on('connection', (connection, info) => {
     }
   });
   noisy.on('close', () => {
-    console.log(Date.now(), 'noisy close 2');
+    console.log(Date.now(), 'noisy close 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
 
     if (reversed) {
       console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
@@ -183,7 +185,7 @@ swarm.on('connection', (connection, info) => {
     reversed.write(chunk);
   });
 
-  console.log(Date.now(), 'after ready connection noisy');
+  console.log(Date.now(), 'after ready connection noisy', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
   connection.noisy = noisy;
 
   // pump(noisy, reversed, noisy);
@@ -212,9 +214,10 @@ process.once('SIGINT', function () {
     process.exit();
   });
   for (let connection of swarm.connections) {
-    if (connection.noisy) {
-      console.log(Date.now(), 'sigint before noisy.end()');
-      connection.noisy.end();
+    let noisy = connection.noisy;
+    if (noisy) {
+      console.log(Date.now(), 'sigint before noisy.end()', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
+      noisy.end();
     }
   }
   // swarm.destroy();

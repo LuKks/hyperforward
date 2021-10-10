@@ -44,11 +44,15 @@ let reuseFirstSocket = true;
 swarm.once('connection', (connection, info) => {
   console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
+  // if (info.type === 'tcp') connection.allowHalfOpen = true;
+
   connection.on('error', (err) => console.log(Date.now(), 'raw connection error', err));
+  connection.on('error', connection.destroy);
+  connection.on('timeout', () => console.log(Date.now(), 'raw connection timeout'));
   connection.on('end', () => console.log(Date.now(), 'raw connection ended'));
+  connection.on('drain', () => console.log(Date.now(), 'raw connection drained'));
   connection.on('finish', () => console.log(Date.now(), 'raw connection finished'));
   connection.on('close', () => console.log(Date.now(), 'raw connection closed'));
-  connection.on('error', connection.destroy);
 
   swarm.leave(topic, () => console.log(Date.now(), 'swarm leaved (connection)'));
 
@@ -58,10 +62,12 @@ swarm.once('connection', (connection, info) => {
     remoteStaticKey: serverPublicKey
   });
   noisy.on('error', (err) => console.log(Date.now(), 'noisy error', err));
-  noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
+  noisy.on('error', noisy.destroy);
   noisy.on('handshake', () => console.log(Date.now(), 'noisy handshake'));
   noisy.on('connected', () => console.log(Date.now(), 'noisy connected'));
+  noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
   noisy.on('end', () => console.log(Date.now(), 'noisy ended'));
+  noisy.on('drain', () => console.log(Date.now(), 'noisy drained'));
   noisy.on('finish', () => console.log(Date.now(), 'noisy finished'));
   noisy.on('close', () => console.log(Date.now(), 'noisy closed'));
 
