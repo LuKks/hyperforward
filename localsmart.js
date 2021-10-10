@@ -44,26 +44,26 @@ let reuseFirstSocket = true;
 swarm.once('connection', (connection, info) => {
   console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  connection.on('error', (err) => console.log('raw connection error', err));
-  connection.on('end', () => console.log('raw connection ended'));
-  connection.on('finish', () => console.log('raw connection finished'));
-  connection.on('close', () => console.log('raw connection closed'));
+  connection.on('error', (err) => console.log(Date.now(), 'raw connection error', err));
+  connection.on('end', () => console.log(Date.now(), 'raw connection ended'));
+  connection.on('finish', () => console.log(Date.now(), 'raw connection finished'));
+  connection.on('close', () => console.log(Date.now(), 'raw connection closed'));
   connection.on('error', connection.destroy);
 
-  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
+  swarm.leave(topic, () => console.log(Date.now(), 'swarm leaved (connection)'));
 
   let socketSecure = noisePeer(connection, true, {
     pattern: 'XK',
     staticKeyPair: clientKeys,
     remoteStaticKey: serverPublicKey
   });
-  socketSecure.on('error', (err) => console.log('socketSecure error', err));
-  socketSecure.on('timeout', () => console.log('socketSecure timeout'));
-  socketSecure.on('handshake', () => console.log('socketSecure handshake'));
-  socketSecure.on('connected', () => console.log('socketSecure connected'));
-  socketSecure.on('end', () => console.log('socketSecure ended'));
-  socketSecure.on('finish', () => console.log('socketSecure finished'));
-  socketSecure.on('close', () => console.log('socketSecure closed'));
+  socketSecure.on('error', (err) => console.log(Date.now(), 'socketSecure error', err));
+  socketSecure.on('timeout', () => console.log(Date.now(), 'socketSecure timeout'));
+  socketSecure.on('handshake', () => console.log(Date.now(), 'socketSecure handshake'));
+  socketSecure.on('connected', () => console.log(Date.now(), 'socketSecure connected'));
+  socketSecure.on('end', () => console.log(Date.now(), 'socketSecure ended'));
+  socketSecure.on('finish', () => console.log(Date.now(), 'socketSecure finished'));
+  socketSecure.on('close', () => console.log(Date.now(), 'socketSecure closed'));
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
@@ -128,27 +128,27 @@ swarm.once('connection', (connection, info) => {
 
   myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
     let serverAddress = myLocalServer.address();
-    console.log('local forward:', { address: serverAddress.address, port: serverAddress.port });
+    console.log(Date.now(), 'local forward:', { address: serverAddress.address, port: serverAddress.port });
   });
 
   connection.noisy = socketSecure;
 });
 
 swarm.on('disconnection', (socket, info) => {
-  console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  console.log(Date.now(), 'disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 });
 
 swarm.on('updated', ({ key }) => {
-  console.log('updated', key);
+  console.log(Date.now(), 'updated', key);
 
   if (!swarm.connections.size) {
-    console.log('keep waiting an incoming connection..');
+    console.log(Date.now(), 'keep waiting an incoming connection..');
     // swarm.destroy();
   }
 });
 
 swarm.on('close', () => {
-  console.log('swarm close');
+  console.log(Date.now(), 'swarm close');
   process.exit();
 });
 
@@ -163,13 +163,13 @@ process.once('SIGINT', function () {
   });
   for (let connection of swarm.connections) {
     if (connection.noisy) {
-      console.log('sigint before noisy.end()');
+      console.log(Date.now(), 'sigint before noisy.end()');
       connection.noisy.end();
     }
   }
   // swarm.destroy();
   setTimeout(() => {
-    console.log('force exit');
+    console.log(Date.now(), 'force exit');
     process.exit();
   }, 2000);
 });
