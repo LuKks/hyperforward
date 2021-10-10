@@ -1,6 +1,6 @@
 {
   "name": "hyperforward",
-  "version": "0.3.29",
+  "version": "0.3.30",
   "description": "Forwarding via Hyperswarm (p2p) + Noise Protocol (e2e encrypted)",
   "main": "index.js",
   "scripts": {
