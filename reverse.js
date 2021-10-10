@@ -124,6 +124,9 @@ swarm.on('connection', (connection, info) => {
   });
 
   noisy.on('end', () => {
+    console.log('noisy end 2');
+    noisy.end();
+
     if (reversed) {
       console.log('ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
       reversed.end(); // + should call destroy after end is sent
