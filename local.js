@@ -107,7 +107,7 @@ swarm.once('connection', (socket, info) => {
   });
 
   socket.on('end', () => {
-    socket.end();
+    socketSecure.end();
   });
 });
 
