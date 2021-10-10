@@ -103,6 +103,10 @@ swarm.on('connection', (connection, info) => {
 
   let reversed;
 
+  noisy.on('connected', () => {
+    console.log('noisy connected');
+  });
+
   noisy.on('error', (err) => {
     console.log('noisy error', err);
   });

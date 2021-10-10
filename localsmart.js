@@ -77,6 +77,10 @@ swarm.once('connection', (socket, info) => {
       remoteStaticKey: serverPublicKey
     });
 
+    socketSecure.on('connected', () => {
+      console.log('socketSecure connected');
+    });
+
     rawStream.on('error', (err) => {
       console.log('rawStream error', err);
     });
