@@ -149,7 +149,13 @@ process.once('SIGINT', function () {
   swarm.once('close', function () {
     process.exit();
   });
-  swarm.destroy();
+  for (let socket of swarm.connections) {
+    if (socket.noisy) {
+      console.log('sigint before noisy.end()');
+      socket.noisy.end();
+    }
+  }
+  // swarm.destroy();
   setTimeout(() => process.exit(), 2000);
 });
 
