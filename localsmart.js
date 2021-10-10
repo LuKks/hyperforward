@@ -52,18 +52,23 @@ swarm.once('connection', (connection, info) => {
 
   swarm.leave(topic, () => console.log(Date.now(), 'swarm leaved (connection)'));
 
-  let socketSecure = noisePeer(connection, true, {
+  let noisy = noisePeer(connection, true, {
     pattern: 'XK',
     staticKeyPair: clientKeys,
     remoteStaticKey: serverPublicKey
   });
-  socketSecure.on('error', (err) => console.log(Date.now(), 'socketSecure error', err));
-  socketSecure.on('timeout', () => console.log(Date.now(), 'socketSecure timeout'));
-  socketSecure.on('handshake', () => console.log(Date.now(), 'socketSecure handshake'));
-  socketSecure.on('connected', () => console.log(Date.now(), 'socketSecure connected'));
-  socketSecure.on('end', () => console.log(Date.now(), 'socketSecure ended'));
-  socketSecure.on('finish', () => console.log(Date.now(), 'socketSecure finished'));
-  socketSecure.on('close', () => console.log(Date.now(), 'socketSecure closed'));
+  noisy.on('error', (err) => console.log(Date.now(), 'noisy error', err));
+  noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
+  noisy.on('handshake', () => console.log(Date.now(), 'noisy handshake'));
+  noisy.on('connected', () => console.log(Date.now(), 'noisy connected'));
+  noisy.on('end', () => console.log(Date.now(), 'noisy ended'));
+  noisy.on('finish', () => console.log(Date.now(), 'noisy finished'));
+  noisy.on('close', () => console.log(Date.now(), 'noisy closed'));
+
+  noisy.on('end', () => {
+    console.log(Date.now(), 'noisy ended 2');
+    noisy.end();
+  });
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
@@ -81,16 +86,16 @@ swarm.once('connection', (connection, info) => {
         socket.on('close', () => console.log('raw socket closed'));
         socket.on('error', socket.destroy);
 
-        socketSecure = noisePeer(socket, true, {
+        noisy = noisePeer(socket, true, {
           pattern: 'XK',
           staticKeyPair: clientKeys,
           remoteStaticKey: serverPublicKey
         });
-        socketSecure.on('error', (err) => console.log('socketSecure error', err));
-        socketSecure.on('handshake', () => console.log('socketSecure handshake'));
-        socketSecure.on('connected', () => console.log('socketSecure connected'));
-        socketSecure.on('end', () => console.log('socketSecure ended', info.type));
-        socketSecure.on('close', () => console.log('socketSecure closed', info.type));
+        noisy.on('error', (err) => console.log('noisy error', err));
+        noisy.on('handshake', () => console.log('noisy handshake'));
+        noisy.on('connected', () => console.log('noisy connected'));
+        noisy.on('end', () => console.log('noisy ended', info.type));
+        noisy.on('close', () => console.log('noisy closed', info.type));
       } else {
         reuseFirstSocket = false;
       }
@@ -103,27 +108,27 @@ swarm.once('connection', (connection, info) => {
     });
     rawStream.on('end', () => {
       console.log('rawStream end');
-      socketSecure.end();
+      noisy.end();
     });
     rawStream.on('close', () => {
       console.log('rawStream closed');
-      socketSecure.end();
+      noisy.end();
     });
 
     rawStream.on('data', (chunk) => {
       console.log('rawStream data', chunk.length);
-      socketSecure.write(chunk);
+      noisy.write(chunk);
     });
-    socketSecure.on('data', (chunk) => {
-      console.log('socketSecure data pre', chunk.length);
+    noisy.on('data', (chunk) => {
+      console.log('noisy data pre', chunk.length);
       if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
         return;
       }
-      console.log('socketSecure data post', chunk.length);
+      console.log('noisy data post', chunk.length);
       rawStream.write(chunk);
     });
 
-    socketSecure.on('end', () => rawStream.end());
+    noisy.on('end', () => rawStream.end());
   });
 
   myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
@@ -131,7 +136,7 @@ swarm.once('connection', (connection, info) => {
     console.log(Date.now(), 'local forward:', { address: serverAddress.address, port: serverAddress.port });
   });
 
-  connection.noisy = socketSecure;
+  connection.noisy = noisy;
 });
 
 swarm.on('disconnection', (socket, info) => {

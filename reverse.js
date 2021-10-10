@@ -127,8 +127,8 @@ swarm.on('connection', (connection, info) => {
   });
 
   noisy.on('finish', () => {
-    console.log(Date.now(), 'noisy end 2');
-    noisy.end();
+    console.log(Date.now(), 'noisy finished 2');
+    reversed.end();
   });
 
   noisy.on('end', () => {
@@ -136,16 +136,22 @@ swarm.on('connection', (connection, info) => {
     noisy.end();
 
     if (reversed) {
-      console.log(Date.now(), 'ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
       reversed.end(); // + should call destroy after end is sent
-      console.log(Date.now(), 'ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'on noisy close: ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+    } else {
+      console.log(Date.now(), 'on noisy close: not exists: ending and destroying reversed');
     }
   });
   noisy.on('close', () => {
+    console.log(Date.now(), 'noisy close 2');
+
     if (reversed) {
-      console.log(Date.now(), 'ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
       reversed.destroy(); // + should call destroy after end is sent
-      console.log(Date.now(), 'ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+      console.log(Date.now(), 'on noisy close: ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
+    } else {
+      console.log(Date.now(), 'on noisy close: not exists: ending and destroying reversed');
     }
   });
 
