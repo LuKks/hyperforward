@@ -143,6 +143,7 @@ server.on('close', () => {
 });
 
 process.once('SIGINT', function () {
+  console.log('SIGINT');
   server.close();
   setTimeout(() => {
     console.log(Date.now(), 'force exit');

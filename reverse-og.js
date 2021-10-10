@@ -82,7 +82,7 @@ swarm.on('connection', (connection, info) => {
 
   if (info.type === 'tcp') connection.allowHalfOpen = true;
 
-  connection.setNoDelay(true);
+  // connection.setNoDelay(true);
   connection.on('error', (err) => console.log(Date.now(), 'connection error', err));
   connection.on('error', connection.destroy);
   connection.on('timeout', () => console.log(Date.now(), 'connection timeout'));

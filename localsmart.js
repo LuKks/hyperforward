@@ -118,6 +118,7 @@ myLocalServer.on('close', () => {
 });
 
 process.once('SIGINT', function () {
+  console.log(Date.now(), 'SIGINT: client.end()');
   firstClient.end(); // + should call destroy after callback
   // myLocalServer.close();
 
@@ -126,3 +127,9 @@ process.once('SIGINT', function () {
     process.exit();
   }, 2000);
 });
+
+/*
+client.end() => remote 'end' -> client 'finish' -> remote reversed 'finish' -> remote reversed 'end' -> remote 'finish' -> client 'end' -> remote 'close' -> remote reversed 'close' -> client rawStream 'finish' -> client 'close' -> client rawStream -> 'close'
+
+client.end() => remote 'end' -> client 'finish' -> remote reversed 'finish' -> remote reversed 'end' -> remote 'finish' -> client 'end' -> remote 'close' -> remote reversed 'close' -> client rawStream 'finish' -> client 'close' -> client rawStream -> 'close'
+*/
