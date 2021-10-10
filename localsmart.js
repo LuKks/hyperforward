@@ -57,10 +57,11 @@ swarm.once('connection', (socket, info) => {
     remoteStaticKey: serverPublicKey
   });
   socketSecure.on('error', (err) => console.log('socketSecure error', err));
+  socketSecure.on('timeout', () => console.log('socketSecure timeout'));
   socketSecure.on('handshake', () => console.log('socketSecure handshake'));
   socketSecure.on('connected', () => console.log('socketSecure connected'));
-  socketSecure.on('end', () => console.log('socketSecure ended', info.type));
-  socketSecure.on('close', () => console.log('socketSecure closed', info.type));
+  socketSecure.on('end', () => console.log('socketSecure ended'));
+  socketSecure.on('close', () => console.log('socketSecure closed'));
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
@@ -127,6 +128,8 @@ swarm.once('connection', (socket, info) => {
     let serverAddress = myLocalServer.address();
     console.log('local forward:', { address: serverAddress.address, port: serverAddress.port });
   });
+
+  socket.noisy = socketSecure;
 });
 
 /*swarm.on('disconnection', (socket, info) => {
