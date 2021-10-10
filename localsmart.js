@@ -51,12 +51,24 @@ swarm.once('connection', (socket, info) => {
 
   swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
+  let socketSecure = noisePeer(socket, true, {
+    pattern: 'XK',
+    staticKeyPair: clientKeys,
+    remoteStaticKey: serverPublicKey
+  });
+  socketSecure.on('error', (err) => console.log('socketSecure error', err));
+  socketSecure.on('handshake', () => console.log('socketSecure handshake'));
+  socketSecure.on('connected', () => console.log('socketSecure connected'));
+  socketSecure.on('end', () => console.log('socketSecure ended', info.type));
+  socketSecure.on('close', () => console.log('socketSecure closed', info.type));
+
   let myLocalServer = net.createServer(function onconnection (rawStream) {
     console.log('myLocalServer onconnection');
 
     if (info.client) {
       // reuse first socket or connect new one (tcp/utp)
       socket = reuseFirstSocket ? socket : (info.type === 'tcp' ? net : utp).connect(socket.remotePort, socket.remoteAddress);
+
       if (!reuseFirstSocket) {
         if (info.type === 'tcp') socket.setNoDelay(true);
         else socket.on('end', () => socket.end());
@@ -65,21 +77,23 @@ swarm.once('connection', (socket, info) => {
         socket.on('end', () => console.log('raw socket ended'));
         socket.on('close', () => console.log('raw socket closed'));
         socket.on('error', socket.destroy);
+
+        socketSecure = noisePeer(socket, true, {
+          pattern: 'XK',
+          staticKeyPair: clientKeys,
+          remoteStaticKey: serverPublicKey
+        });
+        socketSecure.on('error', (err) => console.log('socketSecure error', err));
+        socketSecure.on('handshake', () => console.log('socketSecure handshake'));
+        socketSecure.on('connected', () => console.log('socketSecure connected'));
+        socketSecure.on('end', () => console.log('socketSecure ended', info.type));
+        socketSecure.on('close', () => console.log('socketSecure closed', info.type));
+      } else {
+        reuseFirstSocket = false;
       }
-      reuseFirstSocket = false;
     } else {
       throw new Error('client is not client?');
     }
-
-    let socketSecure = noisePeer(socket, true, {
-      pattern: 'XK',
-      staticKeyPair: clientKeys,
-      remoteStaticKey: serverPublicKey
-    });
-
-    socketSecure.on('connected', () => {
-      console.log('socketSecure connected');
-    });
 
     rawStream.on('error', (err) => {
       console.log('rawStream error', err);
@@ -106,16 +120,7 @@ swarm.once('connection', (socket, info) => {
       rawStream.write(chunk);
     });
 
-    socketSecure.on('error', (err) => {
-      console.log('socketSecure error', err);
-    });
-    socketSecure.on('end', () => {
-      console.log('socketSecure ended', info.type);
-      rawStream.end();
-    });
-    socketSecure.on('close', () => {
-      console.log('socketSecure closed', info.type);
-    });
+    socketSecure.on('end', () => rawStream.end());
   });
 
   myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {

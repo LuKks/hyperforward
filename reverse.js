@@ -80,9 +80,10 @@ const swarm = hyperswarm({
 swarm.on('connection', (connection, info) => {
   console.log('connection', 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  // if (info.type === 'tcp') connection.allowHalfOpen = true;
+  if (info.type === 'tcp') connection.allowHalfOpen = true;
 
   connection.on('error', (err) => console.log('raw connection error', err));
+  connection.on('timeout', () => console.log('raw connection timeout'));
   connection.on('end', () => console.log('raw connection ended'));
   connection.on('close', () => console.log('raw connection closed'));
   connection.on('error', connection.destroy);
@@ -102,6 +103,14 @@ swarm.on('connection', (connection, info) => {
   // noisy.on('error', noisy.destroy);
 
   let reversed;
+
+  noisy.on('handshake', () => {
+    console.log('noisy handshake');
+  });
+
+  noisy.on('timeout', () => {
+    console.log('noisy timeout');
+  });
 
   noisy.on('connected', () => {
     console.log('noisy connected');
