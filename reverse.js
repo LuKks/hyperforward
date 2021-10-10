@@ -77,16 +77,17 @@ const swarm = hyperswarm({
   announceLocalAddress: true
 });
 
-swarm.on('connection', (socket, info) => {
-  console.log('connection', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+swarm.on('connection', (connection, info) => {
+  console.log('connection', 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
 
-  socket.on('error', socket.destroy);
+  // if (info.type === 'tcp') connection.allowHalfOpen = true;
 
-  socket.on('error', (err) => console.log('raw socket error', err));
-  socket.on('end', () => console.log('raw socket ended'));
-  socket.on('close', () => console.log('raw socket closed'));
+  connection.on('error', (err) => console.log('raw connection error', err));
+  connection.on('end', () => console.log('raw connection ended'));
+  connection.on('close', () => console.log('raw connection closed'));
+  connection.on('error', connection.destroy);
 
-  let noisy = noisePeer(socket, false, {
+  let noisy = noisePeer(connection, false, {
     pattern: 'XK',
     staticKeyPair: serverKeys,
     onstatickey: function (remoteKey, done) {
@@ -98,7 +99,7 @@ swarm.on('connection', (socket, info) => {
       return done(new Error('Unauthorized key'));
     }
   });
-  noisy.on('error', noisy.destroy);
+  // noisy.on('error', noisy.destroy);
 
   let reversed;
 
@@ -156,7 +157,7 @@ swarm.on('connection', (socket, info) => {
     reversed.write(chunk);
   });
 
-  socket.noisy = noisy;
+  connection.noisy = noisy;
 
   // pump(noisy, reversed, noisy);
 });
@@ -189,7 +190,7 @@ process.once('SIGINT', function () {
       socket.noisy.end();
     }
   }
-  swarm.destroy();
+  // swarm.destroy();
   setTimeout(() => {
     console.log('force exit');
     process.exit();
