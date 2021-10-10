@@ -39,9 +39,15 @@ const swarm = hyperswarm({
 });
 
 swarm.once('connection', (socket, info) => {
-  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
 
   console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+
+  socket.on('error', socket.destroy);
+  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
+
+  socket.on('error', (err) => console.log('raw socket error', err));
+  socket.on('end', () => console.log('raw socket ended'));
+  socket.on('close', () => console.log('raw socket closed'));
 
   // client server encrypted
   let socketSecure = noisePeer(socket, true, {
@@ -56,8 +62,18 @@ swarm.once('connection', (socket, info) => {
     rawStream.on('error', (err) => {
       console.log('rawStream error', err);
     });
+    rawStream.on('end', () => {
+      console.log('rawStream ended', info.type);
+    });
     rawStream.on('close', () => {
       console.log('rawStream closed');
+    });
+
+    socketSecure.on('end', () => {
+      rawStream.end();
+    });
+    socketSecure.on('close', () => {
+      rawStream.end();
     });
 
     rawStream.on('data', (chunk) => {
@@ -83,10 +99,11 @@ swarm.once('connection', (socket, info) => {
   socketSecure.on('error', (err) => {
     console.log('socketSecure error', err);
   });
+  socketSecure.on('end', () => {
+    console.log('socketSecure ended');
+  });
   socketSecure.on('close', () => {
-    console.log('socketSecure closed');
-    // myLocalServer.close();
-    // swarm.destroy();
+    console.log('socketSecure closed', info.type);
   });
 });
 
@@ -112,7 +129,6 @@ swarm.on('close', () => {
 swarm.join(topic, {
   lookup: true,
   announce: false,
-  // maxPeers: 1,
 });
 
 process.once('SIGINT', function () {
