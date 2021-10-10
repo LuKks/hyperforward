@@ -151,7 +151,7 @@ process.once('SIGINT', function () {
   for (let socket of swarm.connections) {
     if (socket.noisy) {
       console.log('sigint before noisy.end()');
-      socket.noisy.destroy();
+      socket.noisy.end();
     }
   }
   swarm.destroy();
