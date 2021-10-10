@@ -190,7 +190,7 @@ process.once('SIGINT', function () {
       socket.noisy.end();
     }
   }
-  // swarm.destroy();
+  swarm.destroy();
   setTimeout(() => {
     console.log('force exit');
     process.exit();

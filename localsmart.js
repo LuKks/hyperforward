@@ -142,7 +142,6 @@ swarm.on('close', () => {
 swarm.join(topic, {
   lookup: true,
   announce: false,
-  // maxPeers: 1,
 });
 
 process.once('SIGINT', function () {
@@ -155,8 +154,11 @@ process.once('SIGINT', function () {
       socket.noisy.end();
     }
   }
-  // swarm.destroy();
-  setTimeout(() => process.exit(), 2000);
+  swarm.destroy();
+  setTimeout(() => {
+    console.log('force exit');
+    process.exit();
+  }, 2000);
 });
 
 function createHash (algo, name) {
