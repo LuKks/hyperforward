@@ -111,10 +111,9 @@ swarm.once('connection', (socket, info) => {
   });
 });
 
-/*swarm.on('disconnection', (socket, info) => {
+swarm.on('disconnection', (socket, info) => {
   console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-  swarm.destroy();
-});*/
+});
 
 swarm.on('updated', ({ key }) => {
   console.log('updated', key);

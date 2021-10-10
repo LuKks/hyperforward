@@ -46,6 +46,7 @@ swarm.once('connection', (socket, info) => {
 
   socket.on('error', (err) => console.log('raw socket error', err));
   socket.on('end', () => console.log('raw socket ended'));
+  socket.on('finish', () => console.log('raw socket finished'));
   socket.on('close', () => console.log('raw socket closed'));
   socket.on('error', socket.destroy);
 
@@ -61,6 +62,7 @@ swarm.once('connection', (socket, info) => {
   socketSecure.on('handshake', () => console.log('socketSecure handshake'));
   socketSecure.on('connected', () => console.log('socketSecure connected'));
   socketSecure.on('end', () => console.log('socketSecure ended'));
+  socketSecure.on('finish', () => console.log('socketSecure finished'));
   socketSecure.on('close', () => console.log('socketSecure closed'));
 
   let myLocalServer = net.createServer(function onconnection (rawStream) {
@@ -132,10 +134,9 @@ swarm.once('connection', (socket, info) => {
   socket.noisy = socketSecure;
 });
 
-/*swarm.on('disconnection', (socket, info) => {
+swarm.on('disconnection', (socket, info) => {
   console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-  swarm.destroy();
-});*/
+});
 
 swarm.on('updated', ({ key }) => {
   console.log('updated', key);

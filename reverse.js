@@ -86,6 +86,7 @@ swarm.on('connection', (connection, info) => {
   connection.on('error', connection.destroy);
   connection.on('timeout', () => console.log('raw connection timeout'));
   connection.on('end', () => console.log('raw connection ended'));
+  connection.on('finish', () => console.log('raw connection finished'));
   connection.on('close', () => console.log('raw connection closed'));
 
   let noisy = noisePeer(connection, false, {
@@ -106,6 +107,7 @@ swarm.on('connection', (connection, info) => {
   noisy.on('connected', () => console.log('noisy connected'));
   noisy.on('timeout', () => console.log('noisy timeout'));
   noisy.on('end', () => console.log('noisy end'));
+  noisy.on('finish', () => console.log('noisy finished'));
   noisy.on('close', () => console.log('noisy close'));
 
   let reversed = net.connect(reverse[1], reverse[0]);
@@ -113,6 +115,7 @@ swarm.on('connection', (connection, info) => {
   reversed.on('error', reversed.destroy);
   reversed.on('timeout', () => console.log('reversed timeout'));
   reversed.on('end', () => console.log('reversed ended'));
+  reversed.on('finish', () => console.log('reversed finished'));
   reversed.on('close', () => console.log('reversed closed'));
   reversed.on('data', (chunk) => {
     console.log('reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
