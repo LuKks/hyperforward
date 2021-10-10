@@ -29,6 +29,7 @@
   "dependencies": {
     "hyperswarm": "^2.15.3",
     "minimist": "^1.2.5",
+    "noise-network": "github:LuKks/noise-network",
     "noise-peer": "^2.1.1",
     "pump": "^3.0.0",
     "sodium-native": "^3.2.1",

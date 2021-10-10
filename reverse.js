@@ -1,10 +1,7 @@
-const hyperswarm = require('hyperswarm');
-const crypto = require('crypto');
+const noise = require('noise-network');
 const net = require('net');
 const pump = require('pump');
-const noisePeer = require('noise-peer');
 const fs = require('fs');
-const sodium = require('sodium-native');
 const argv = require('minimist')(process.argv.slice(2));
 const homedir = require('os').homedir();
 
@@ -61,58 +58,40 @@ const clientPublicKeys = clients.map(client => {
     return Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + client + '.pub', 'utf8'), 'hex');
   }
 });
-const topic = discoveryKey(maybeConvertKey(serverKeys.publicKey));
 
 console.log('serverKeys.publicKey', serverKeys.publicKey);
 console.log('clientPublicKeys', clientPublicKeys);
-console.log('topic', topic);
 
 // [setting for "servers" in local networks with firewall]
 // allow IN traffic from all interfaces on localAddress:49737
 // 192.168.0.2 49737 ALLOW IN Anywhere
-const swarm = hyperswarm({
-  // announcePort: 49736, // this port is only used when the swarm has announce enabled
-  // port: 49737, // peer port
-  preferredPort: 49737, // preferred peer port
-  announceLocalAddress: true
+const server = noise.createServer({
+  // authentication
+  validate: function (remoteKey, done) {
+    // console.log('server validate', remoteKey.toString('hex'));
+    for (let i = 0; i < clientPublicKeys.length; i++) {
+      let publicKey = clientPublicKeys[i];
+      if (remoteKey.equals(publicKey)) return done();
+    }
+    return done(new Error('Unauthorized key'));
+  }
 });
 
-swarm.on('connection', (connection, info) => {
-  console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+server.on('connection', function (client) {
+  // console.log(Date.now(), 'connection', connection.remoteAddress, connection.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+  console.log(Date.now(), 'client connection');
 
-  // if (info.type === 'tcp') connection.allowHalfOpen = true;
+  client.on('error', (err) => console.log(Date.now(), 'client error', err));
+  client.on('connect', () => console.log(Date.now(), 'client connect'));
+  client.on('handshake', () => console.log(Date.now(), 'client handshake'));
+  client.on('connected', () => console.log(Date.now(), 'client connected'));
+  client.on('timeout', () => console.log(Date.now(), 'client timeout'));
+  client.on('end', () => console.log(Date.now(), 'client ended'));
+  client.on('drain', () => console.log(Date.now(), 'client drained'));
+  client.on('finish', () => console.log(Date.now(), 'client finished'));
+  client.on('close', () => console.log(Date.now(), 'client closed'));
 
-  connection.on('error', (err) => console.log(Date.now(), 'raw connection error', err));
-  connection.on('error', connection.destroy);
-  connection.on('timeout', () => console.log(Date.now(), 'raw connection timeout'));
-  connection.on('end', () => console.log(Date.now(), 'raw connection ended'));
-  connection.on('drain', () => console.log(Date.now(), 'raw connection drained'));
-  connection.on('finish', () => console.log(Date.now(), 'raw connection finished'));
-  connection.on('close', () => console.log(Date.now(), 'raw connection closed'));
-
-  let noisy = noisePeer(connection, false, {
-    pattern: 'XK',
-    staticKeyPair: serverKeys,
-    onstatickey: function (remoteKey, done) {
-      // console.log('onstatickey', remoteKey.toString('hex'));
-      for (let i = 0; i < clientPublicKeys.length; i++) {
-        let publicKey = clientPublicKeys[i];
-        if (remoteKey.equals(publicKey)) return done();
-      }
-      return done(new Error('Unauthorized key'));
-    }
-  });
-  noisy.on('error', (err) => console.log(Date.now(), 'noisy error', err));
-  noisy.on('error', noisy.destroy);
-  noisy.on('handshake', () => console.log(Date.now(), 'noisy handshake'));
-  noisy.on('connected', () => console.log(Date.now(), 'noisy connected'));
-  noisy.on('timeout', () => console.log(Date.now(), 'noisy timeout'));
-  noisy.on('end', () => console.log(Date.now(), 'noisy end'));
-  noisy.on('drain', () => console.log(Date.now(), 'noisy drained'));
-  noisy.on('finish', () => console.log(Date.now(), 'noisy finished'));
-  noisy.on('close', () => console.log(Date.now(), 'noisy close'));
-
-  let reversed = net.connect(reverse[1], reverse[0]);
+  let reversed = net.connect(reverse[1], reverse[0]/*, { allowHalfOpen: true }*/);
   reversed.on('error', (err) => console.log(Date.now(), 'reversed error', err));
   reversed.on('error', reversed.destroy);
   reversed.on('timeout', () => console.log(Date.now(), 'reversed timeout'));
@@ -120,131 +99,53 @@ swarm.on('connection', (connection, info) => {
   reversed.on('drain', () => console.log(Date.now(), 'reversed drained'));
   reversed.on('finish', () => console.log(Date.now(), 'reversed finished'));
   reversed.on('close', () => console.log(Date.now(), 'reversed closed'));
+
+  reversed.on('end', () => client.end());
+  reversed.on('close', () => client.destroy());
+
+  client.on('end', () => reversed.end());
+  reversed.on('finish', () => reversed.end());
+  client.on('close', () => reversed.destroy());
+
+  client.on('data', (chunk) => {
+    console.log(Date.now(), 'client data pre', chunk.length);
+    if (!reversed || reversed.ending || reversed.ended || reversed.finished || reversed.destroyed || reversed.closed) {
+      // reconnect
+      // + should wait for on connect to reversed.write?
+      return;
+    }
+    console.log(Date.now(), 'client data post', chunk.length);
+    reversed.write(chunk);
+  });
   reversed.on('data', (chunk) => {
     console.log(Date.now(), 'reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
-    if (!noisy || noisy.ending || noisy.ended || noisy.finished || noisy.destroyed || noisy.closed) {
+    if (!client || client.ending || client.ended || client.finished || client.destroyed || client.closed) {
+      // reconnect?
+      // + should wait for on connect to client.write?
       return;
     }
     console.log(Date.now(), 'reversed data post', chunk.length);
-    noisy.write(chunk);
+    client.write(chunk);
   });
 
-  noisy.on('finish', () => {
-    console.log(Date.now(), 'noisy finished 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
-    noisy.end();
-  });
+  console.log(Date.now(), 'after ready connection client', client.ending, client.ended, client.finished, client.destroyed, client.closed);
 
-  noisy.on('end', () => {
-    console.log(Date.now(), 'noisy end 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
-
-    if (reversed) {
-      console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
-      reversed.end(); // + should call destroy after end is sent
-      console.log(Date.now(), 'on noisy close: ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
-    } else {
-      console.log(Date.now(), 'on noisy close: not exists: ending and destroying reversed');
-    }
-  });
-  noisy.on('close', () => {
-    console.log(Date.now(), 'noisy close 2', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
-
-    if (reversed) {
-      console.log(Date.now(), 'on noisy close: ending and destroying reversed pre', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
-      reversed.destroy(); // + should call destroy after end is sent
-      console.log(Date.now(), 'on noisy close: ending and destroying reversed pos', reversed.ending, reversed.ended, reversed.finished, reversed.destroyed, reversed.closed);
-    } else {
-      console.log(Date.now(), 'on noisy close: not exists: ending and destroying reversed');
-    }
-  });
-
-  noisy.on('data', (chunk) => {
-    console.log('noisy data', chunk.length);
-
-    if (!reversed || reversed.ending || reversed.ended || reversed.finished || reversed.destroyed || reversed.closed) {
-      // reconnect
-      console.log('recreating reversed');
-      reversed = net.connect(reverse[1], reverse[0]);
-      reversed.on('error', (err) => console.log('reversed error', err));
-      reversed.on('error', reversed.destroy);
-      reversed.on('timeout', () => console.log('reversed timeout'));
-      reversed.on('end', () => console.log('reversed ended'));
-      reversed.on('close', () => console.log('reversed closed'));
-
-      reversed.on('data', (chunk) => {
-        console.log('reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
-        if (!noisy || noisy.ending || noisy.ended || noisy.finished || noisy.destroyed || noisy.closed) {
-          return;
-        }
-        console.log('reversed data post', chunk.length);
-        noisy.write(chunk);
-      });
-
-      // + should wait for on connect to reversed.write?
-    }
-
-    reversed.write(chunk);
-  });
-
-  console.log(Date.now(), 'after ready connection noisy', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
-  connection.noisy = noisy;
-
-  // pump(noisy, reversed, noisy);
+  // pump(client, reversed, client);
 });
 
-swarm.on('disconnection', (socket, info) => {
-  console.log(Date.now(), 'disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
+server.listen(serverKeys, function () {
+  console.log('Server is listening on:', server.publicKey.toString('hex'), 'alias:', server.alias);
 });
 
-swarm.on('updated', ({ key }) => {
-  console.log(Date.now(), 'updated', key);
-});
-
-swarm.on('close', () => {
-  console.log(Date.now(), 'swarm close');
+server.on('close', () => {
+  console.log(Date.now(), 'server close');
   process.exit();
 });
 
-swarm.join(topic, {
-  lookup: false,
-  announce: true
-});
-
 process.once('SIGINT', function () {
-  swarm.once('close', function () {
-    process.exit();
-  });
-  for (let connection of swarm.connections) {
-    let noisy = connection.noisy;
-    if (noisy) {
-      console.log(Date.now(), 'sigint before noisy.end()', noisy.ending, noisy.ended, noisy.finished, noisy.destroyed, noisy.closed);
-      noisy.end();
-    }
-  }
-  // swarm.destroy();
+  server.close();
   setTimeout(() => {
     console.log(Date.now(), 'force exit');
     process.exit();
   }, 2000);
 });
-
-function createHash (algo, name) {
-  return crypto.createHash(algo).update(name).digest();
-}
-
-function discoveryKey (publicKey) {
-  const buf = Buffer.alloc(32);
-  const str = Buffer.from('hyperforward');
-  sodium.crypto_generichash(buf, str, publicKey);
-  return buf
-}
-
-function maybeConvertKey (key) {
-  return typeof key === 'string' ? Buffer.from(key, 'hex') : key;
-}
-
-function maybeConvertKeyPair (keys) {
-  return {
-    publicKey: maybeConvertKey(keys.publicKey),
-    secretKey: maybeConvertKey(keys.secretKey)
-  };
-}
