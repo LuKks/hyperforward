@@ -7,37 +7,6 @@ const homedir = require('os').homedir();
 
 console.log('argv', argv); // argv { _: [], R: '127.0.0.1:3000', clients: 'crst' }
 
-// [1]
-// create your main pair keys (also ask a friend to do the same):
-// hyperforward keygen
-// => will generate ~/.ssh/noise.pub and ~/.ssh/noise
-
-// []
-// from now, to create more pair keys in the same system need to set a name (like srv, lks, crst, etc):
-// hyperforward keygen srv
-// => will generate ~/.ssh/noise_srv.pub and ~/.ssh/noise_srv
-
-// []
-// to print a public key:
-// hyperforward print crst
-// => e52fc62ec5ac755f5e6fb41f86db8bdea44a5fa918c44dbf3d4c1a0b1872130f
-
-// [2]
-// for easy usage, save your friend's public key with a custom name (crst has to do the same):
-// hyperforward add crst e52fc62ec5ac755f5e6fb41f86db8bdea44a5fa918c44dbf3d4c1a0b1872130f
-// => will generate ~/.ssh/noise_crst.pub
-
-// let's say I (lks) have a react app or backend in the port 3000,
-// and I would like to share it with a friend (crst):
-
-// [3]
-// # I create reverse forward allowing only specific clients (comma separated, by name or pubkey)
-// hyperforward -R 127.0.0.1:3000 --keys=lks --clients=crst
-
-// [4]
-// # later only crst can receive the forward
-// hyperforward -L 127.0.0.1:3000 --keys=crst --join=lks
-
 let keys = (argv.keys || '').trim();
 keys = 'noise' + (keys ? '_' + keys : '');
 console.log('keys', keys);
@@ -93,58 +62,67 @@ server.on('connection', function (client) {
 
   let reversed = net.connect(reverse[1], reverse[0]/*, { allowHalfOpen: true }*/);
   reversed.on('error', (err) => console.log(Date.now(), 'reversed error', err));
-  reversed.on('error', reversed.destroy);
   reversed.on('timeout', () => console.log(Date.now(), 'reversed timeout'));
   reversed.on('end', () => console.log(Date.now(), 'reversed ended'));
   reversed.on('drain', () => console.log(Date.now(), 'reversed drained'));
   reversed.on('finish', () => console.log(Date.now(), 'reversed finished'));
   reversed.on('close', () => console.log(Date.now(), 'reversed closed'));
 
+  // handle errors
+  client.on('error', reversed.destroy);
+  reversed.on('error', client.destroy);
+
+  // automatic "end and destroy" after server.close()
+  let clientEnd = () => client.end();
+  server.once('$closing', clientEnd);
+  client.once('close', () => server.off('$closing', clientEnd));
+
+  client.on('data', (chunk) => reversed.write(chunk));
+  client.on('end', () => {
+    // client.end();
+    reversed.end();
+  });
+  client.on('finish', () => {
+    client.destroy();
+    // reversed may have already ended
+    reversed.end();
+  });
+  client.on('close', () => reversed.destroy());
+
+  reversed.on('data', (chunk) => client.write(chunk));
+  reversed.on('finish', () => {
+    reversed.destroy();
+    client.end();
+  });
   reversed.on('end', () => client.end());
   reversed.on('close', () => client.destroy());
 
-  client.on('end', () => reversed.end());
-  reversed.on('finish', () => reversed.end());
-  client.on('close', () => reversed.destroy());
-
-  client.on('data', (chunk) => {
-    console.log(Date.now(), 'client data pre', chunk.length);
-    if (!reversed || reversed.ending || reversed.ended || reversed.finished || reversed.destroyed || reversed.closed) {
-      // reconnect
-      // + should wait for on connect to reversed.write?
-      return;
-    }
-    console.log(Date.now(), 'client data post', chunk.length);
-    reversed.write(chunk);
-  });
-  reversed.on('data', (chunk) => {
-    console.log(Date.now(), 'reversed data pre', /*chunk, chunk.toString('utf8'), */chunk.length);
-    if (!client || client.ending || client.ended || client.finished || client.destroyed || client.closed) {
-      // reconnect?
-      // + should wait for on connect to client.write?
-      return;
-    }
-    console.log(Date.now(), 'reversed data post', chunk.length);
-    client.write(chunk);
-  });
-
-  console.log(Date.now(), 'after ready connection client', client.ending, client.ended, client.finished, client.destroyed, client.closed);
-
-  // pump(client, reversed, client);
+  // + will not allow reconnect (default behaviour)?
+  // client.on('close', () => server.close());
+  // reversed.on('close', () => server.close());
 });
 
 server.listen(serverKeys, function () {
   console.log('Server is listening on:', server.publicKey.toString('hex'), 'alias:', server.alias);
 });
 
-server.on('close', () => {
-  console.log(Date.now(), 'server close');
-  process.exit();
-});
+function serverClose (server) {
+  console.log(Date.now(), 'server.end()');
+  server.close(); // stop accepting new connections
+
+  console.log(Date.now(), 'emit $closing');
+  server.emit('$closing');
+}
 
 process.once('SIGINT', function () {
-  console.log('SIGINT');
-  server.close();
+  console.log(Date.now(), 'SIGINT');
+
+  server.once('close', () => {
+    console.log('server closed');
+    process.exit();
+  });
+  serverClose(server);
+
   setTimeout(() => {
     console.log(Date.now(), 'force exit');
     process.exit();

@@ -7,8 +7,6 @@ const homedir = require('os').homedir();
 
 console.log('argv', argv);
 
-// hyperforward -L 127.0.0.1:3000 --keys=crst --join=lks
-
 let keys = (argv.keys || '').trim();
 keys = 'noise' + (keys ? '_' + keys : '');
 console.log('keys', keys);
@@ -25,102 +23,92 @@ const clientKeys = {
   publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/' + keys + '.pub', 'utf8'), 'hex'),
   secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/' + keys, 'utf8'), 'hex')
 };
-
 console.log('serverPublicKey', serverPublicKey);
 console.log('clientKeys.publicKey', clientKeys.publicKey);
 
-let firstClient = noise.connect(serverPublicKey, clientKeys);
-// console.log(Date.now(), 'connection', client.remoteAddress, client.remotePort, connection.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-firstClient.on('error', (err) => console.log(Date.now(), 'firstClient error', err));
-firstClient.on('connect', () => console.log(Date.now(), 'firstClient connect'));
-firstClient.on('handshake', () => console.log(Date.now(), 'firstClient handshake'));
-firstClient.on('connected', () => console.log(Date.now(), 'firstClient connected'));
-firstClient.on('timeout', () => console.log(Date.now(), 'firstClient timeout'));
-firstClient.on('end', () => console.log(Date.now(), 'firstClient ended'));
-firstClient.on('drain', () => console.log(Date.now(), 'firstClient drained'));
-firstClient.on('finish', () => console.log(Date.now(), 'firstClient finished'));
-firstClient.on('close', () => console.log(Date.now(), 'firstClient closed'));
+let server = net.createServer(function (rawStream) {
+  console.log(Date.now(), 'server on connection');
 
-let reuseFirstSocket = true;
-let myLocalServer = net.createServer(function onconnection (rawStream) {
-  console.log(Date.now(), 'myLocalServer onconnection');
+  // reuse first socket or connect new one (tcp/utp)
+  let client = noise.connect(serverPublicKey, clientKeys);
+  client.on('error', (err) => console.log(Date.now(), 'client error', err));
+  client.on('connect', () => console.log(Date.now(), 'client connect'));
+  client.on('handshake', () => console.log(Date.now(), 'client handshake'));
+  client.on('connected', () => console.log(Date.now(), 'client connected'));
+  client.on('timeout', () => console.log(Date.now(), 'client timeout'));
+  client.on('end', () => console.log(Date.now(), 'client ended'));
+  client.on('drain', () => console.log(Date.now(), 'client drained'));
+  client.on('finish', () => console.log(Date.now(), 'client finished'));
+  client.on('close', () => console.log(Date.now(), 'client closed'));
 
   rawStream.on('error', (err) => console.log(Date.now(), 'rawStream error', err));
-  rawStream.on('error', rawStream.destroy);
   rawStream.on('timeout', () => console.log(Date.now(), 'rawStream timeout'));
   rawStream.on('end', () => console.log(Date.now(), 'rawStream ended'));
   rawStream.on('drain', () => console.log(Date.now(), 'rawStream drained'));
   rawStream.on('finish', () => console.log(Date.now(), 'rawStream finished'));
   rawStream.on('close', () => console.log(Date.now(), 'rawStream closed'));
 
-  // reuse first socket or connect new one (tcp/utp)
-  let client = reuseFirstSocket ? firstClient : noise.connect(serverPublicKey, clientKeys);
-  if (!reuseFirstSocket) {
-    client.on('error', (err) => console.log(Date.now(), 'client error', err));
-    client.on('connect', () => console.log(Date.now(), 'client connect'));
-    client.on('handshake', () => console.log(Date.now(), 'client handshake'));
-    client.on('connected', () => console.log(Date.now(), 'client connected'));
-    client.on('timeout', () => console.log(Date.now(), 'client timeout'));
-    client.on('end', () => console.log(Date.now(), 'client ended'));
-    client.on('drain', () => console.log(Date.now(), 'client drained'));
-    client.on('finish', () => console.log(Date.now(), 'client finished'));
-    client.on('close', () => console.log(Date.now(), 'client closed'));
-    myLocalServer.once('close', function () {
-      console.log(Date.now(), 'myLocalServer close, client');
-      client.destroy();
-    });
+  // handle errors
+  rawStream.on('error', client.destroy);
+  client.on('error', rawStream.destroy);
+
+  // automatic "end and destroy" after server.close()
+  server.once('$closing', endAndDestroy);
+  client.once('close', () => server.off('$closing', endAndDestroy));
+  function endAndDestroy () {
+    client.once('finish', client.destroy);
+    client.end();
   }
-  reuseFirstSocket = false;
 
-  myLocalServer.once('close', function () {
-    rawStream.destroy();
-  });
-
+  // mimic local to remote
+  rawStream.on('data', (chunk) => client.write(chunk));
   rawStream.on('end', () => client.end());
+  rawStream.on('finish', () => {
+    rawStream.destroy();
+    client.end();
+  });
   rawStream.on('close', () => client.destroy());
 
-  client.on('end', () => rawStream.end());
-  rawStream.on('finish', () => rawStream.end());
+  // mimic remote to local
+  client.on('data', (chunk) => rawStream.write(chunk));
+  client.on('end', () => {
+    rawStream.end();
+    // client.end();
+  });
+  client.on('finish', () => {
+    client.destroy();
+    rawStream.end();
+  });
   client.on('close', () => rawStream.destroy());
 
-  rawStream.on('close', () => {
-    // will not allow reconnect?
-    myLocalServer.close();
-  });
+  // reconnect
 
-  rawStream.on('data', (chunk) => {
-    console.log(Date.now(), 'rawStream data', chunk.length);
-    client.write(chunk);
-  });
-  client.on('data', (chunk) => {
-    console.log(Date.now(), 'client data pre', chunk.length);
-    if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
-      return;
-    }
-    console.log(Date.now(), 'client data post', chunk.length);
-    rawStream.write(chunk);
-  });
+  // + will not allow reconnect (default behaviour)?
+  // rawStream.on('close', () => server.close());
+  // client.on('close', () => server.close());
 });
 
-myLocalServer.once('close', function () {
-  console.log(Date.now(), 'myLocalServer close, firstClient');
-  firstClient.destroy();
-});
-
-myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
-  let serverAddress = myLocalServer.address();
+server.listen(localReverse[1] || 0, localReverse[0], function () {
+  let serverAddress = server.address();
   console.log(Date.now(), 'local forward:', { address: serverAddress.address, port: serverAddress.port });
 });
 
-myLocalServer.on('close', () => {
-  console.log(Date.now(), 'myLocalServer close');
-  process.exit();
-});
+function serverClose (server) {
+  console.log(Date.now(), 'server.end()');
+  server.close(); // stop accepting new connections
+
+  console.log(Date.now(), 'emit $closing');
+  server.emit('$closing');
+}
 
 process.once('SIGINT', function () {
-  console.log(Date.now(), 'SIGINT: client.end()');
-  firstClient.end(); // + should call destroy after callback
-  // myLocalServer.close();
+  console.log(Date.now(), 'SIGINT');
+
+  server.once('close', () => {
+    console.log('server closed');
+    process.exit();
+  });
+  serverClose(server);
 
   setTimeout(() => {
     console.log(Date.now(), 'force exit');
