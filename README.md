@@ -134,7 +134,7 @@ hyperforward rm crst
 ```
 
 #### Temporal server authentication
-Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)\
+Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)
 ```bash
 # server:
 hyperforward -R 127.0.0.1:3000 --clients crst
@@ -146,7 +146,7 @@ hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15
 ```
 
 #### Temporal client authentication
-Don't set `--from` in `-L` (will keygen a temporal pair keys in memory)\
+Don't set `--from` in `-L` (will keygen a temporal pair keys in memory)
 ```bash
 # example server listen:
 hyperforward --from lks -R 127.0.0.1:3000 --clients crst
