@@ -7,8 +7,8 @@ console.log('Generating public/secret noise key pair.');
 // + Enter file in which to save the key (/home/lucas/.ssh/id_rsa):
 // + Enter passphrase (empty for no passphrase):
 // + Enter same passphrase again: 
-// Your identification has been saved in asdasdqwe
-// Your public key has been saved in asdasdqwe.pub
+// Your identification has been saved in customname
+// Your public key has been saved in customname.pub
 // The key fingerprint is:
 
 let name = (argv._[1] || '').trim();
