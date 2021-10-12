@@ -19,7 +19,7 @@ if (!existPublicKey && !existSecretKey) {
 if (existPublicKey) {
   try {
     fs.unlinkSync(homedir + '/.ssh/noise_' + name + '.pub');
-    console.log('Public key is now deleted');
+    console.log('Public key is now deleted:', homedir + '/.ssh/noise_' + name + '.pub');
   } catch (err) {
     console.error(err);
   }
@@ -28,7 +28,7 @@ if (existPublicKey) {
 if (existSecretKey) {
   try {
     fs.unlinkSync(homedir + '/.ssh/noise_' + name);
-    console.log('Secret key is now deleted');
+    console.log('Secret key is now deleted:', homedir + '/.ssh/noise_' + name);
   } catch (err) {
     console.error(err);
   }
