@@ -118,7 +118,7 @@ hyperforward -R 127.0.0.1:3000 --clients crst
 # 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
 
 # example client connection:
-hyperforward --from crst -R 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
 ```
 
 #### Temporal client authentication
@@ -130,7 +130,7 @@ hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 # dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
 
 # client:
-hyperforward --from crst -R 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
 ```
 
 ## License
