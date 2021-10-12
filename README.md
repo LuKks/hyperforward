@@ -113,7 +113,7 @@ hyperforward print lks
 ```bash
 # use: hyperforward ls
 
-hyperforward ls lks
+hyperforward ls
 # My pair keys:
 # 1) lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
 
