@@ -6,11 +6,11 @@ const homedir = require('os').homedir();
 
 argv.from = (argv.from || '').trim();
 
-argv.join = (argv.join || '').trim();
-if (!argv.join) {
-  throw new Error('--join is required (name or public key, comma separated)');
+argv.connect = (argv.connect || '').trim();
+if (!argv.connect) {
+  throw new Error('--connect is required (name or public key, comma separated)');
 }
-argv.join = argv.join.split(','); // => [ 'crst' ]
+argv.connect = argv.connect.split(','); // => [ 'crst' ]
 
 argv.L = (argv.L || '').trim().split(':'); // => [ '127.0.0.1', '4001' ]
 // valid ports: [tcp: 1-65535] [udp: 0-65535 (optional)]
@@ -23,12 +23,12 @@ if (argv.L[1] < 1 || argv.L[1] > 65535) {
   throw new Error('-L port is invalid (1-65535)');
 }
 
-const serverPublicKeys = argv.join.map(join => {
-  if (join === '*' || join.length > 21) {
-    return join;
+const serverPublicKeys = argv.connect.map(connect => {
+  if (connect === '*' || connect.length > 21) {
+    return connect;
   }
-  if (join.length <= 21) {
-    return Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + join + '.pub', 'utf8').trim(), 'hex');
+  if (connect.length <= 21) {
+    return Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + connect + '.pub', 'utf8').trim(), 'hex');
   }
 });
 
