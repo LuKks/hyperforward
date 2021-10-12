@@ -1,6 +1,6 @@
 # hyperforward
 
-Forward p2p e2e encrypted (Hyperswarm/discovery + Noise Protocol)
+Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
