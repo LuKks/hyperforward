@@ -5,9 +5,12 @@ const argv = require('minimist')(process.argv.slice(2));
 const homedir = require('os').homedir();
 
 argv.keys = (argv.keys || '').trim();
-argv.keys = 'noise' + (argv.keys ? '_' + argv.keys : ''); // => "noise_lks"
 
-argv.clients = (argv.clients || '').trim().split(','); // => [ 'lks2' ]
+argv.clients = (argv.clients || '').trim();
+if (!argv.clients) {
+  throw new Error('--clients is required (name or public key, comma separated)');
+}
+argv.clients = argv.clients.split(','); // => [ 'lks2' ]
 
 argv.R = (argv.R || '').trim().split(':');
 // valid ports: [tcp: 1-65535] [udp: 0-65535 (optional)]
@@ -20,65 +23,73 @@ if (argv.R[1] < 1 || argv.R[1] > 65535) {
   throw new Error('-R port is invalid (1-65535)');
 }
 
-const serverKeys = {
-  publicKey: fs.readFileSync(homedir + '/.ssh/' + argv.keys + '.pub', 'utf8').trim(),
-  secretKey: fs.readFileSync(homedir + '/.ssh/' + argv.keys, 'utf8').trim()
-};
+let serverKeys;
+if (argv.keys) {
+  serverKeys = {
+    publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys + '.pub', 'utf8').trim(), 'hex'),
+    secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys, 'utf8').trim(), 'hex')
+  };
+} else {
+  serverKeys = noise.keygen();
+}
+
 const clientPublicKeys = argv.clients.map(client => {
-  // support names
-  if (client.length <= 21) {
-    return fs.readFileSync(homedir + '/.ssh/noise_' + client + '.pub', 'utf8').trim();
+  if (client === '*' || client.length > 21) {
+    return client;
   }
-  return client;
+  return Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + client + '.pub', 'utf8').trim(), 'hex');
 });
+
+// + maybe start a lookup for Client in case it already exists to connect even faster
 
 const server = noise.createServer({
   // authentication
   validate: function (remoteKey, done) {
     for (let i = 0; i < clientPublicKeys.length; i++) {
       let publicKey = clientPublicKeys[i];
-      if (remoteKey.toString('hex') === publicKey) {
-        console.log(Date.now(), 'server validate, allowed public key:\n', remoteKey.toString('hex'));
+      if (publicKey === '*') {
+        return done();
+      }
+      if (remoteKey.equals(publicKey)) {
+        console.log(Date.now(), 'server validate, allowed public key:\n' + remoteKey.toString('hex'));
         return done();
       }
     }
-    console.log(Date.now(), 'server validate, denied public key:\n', remoteKey.toString('hex'));
+    console.log(Date.now(), 'server validate, denied public key:\n' + remoteKey.toString('hex'));
     return done(new Error('Unauthorized key'));
   }
 });
 
 server.on('error', (err) => console.error(err));
-
+server.on('close', () => console.log('server closed'));
 server.on('connection', function (client) {
-  console.log(Date.now(), 'client connection');
+  console.log(Date.now(), 'connected to client');
 
-  /*client.on('error', (err) => console.log(Date.now(), 'client error', err));
+  client.on('error', (err) => console.log(Date.now(), 'client error', err));
   client.on('connect', () => console.log(Date.now(), 'client connect'));
   client.on('handshake', () => console.log(Date.now(), 'client handshake'));
   client.on('connected', () => console.log(Date.now(), 'client connected'));
   client.on('timeout', () => console.log(Date.now(), 'client timeout'));
   client.on('end', () => console.log(Date.now(), 'client ended'));
-  client.on('drain', () => console.log(Date.now(), 'client drained'));
+  // client.on('drain', () => console.log(Date.now(), 'client drained'));
   client.on('finish', () => console.log(Date.now(), 'client finished'));
-  client.on('close', () => console.log(Date.now(), 'client closed'));*/
+  client.on('close', () => console.log(Date.now(), 'client closed'));
 
   // + should support udp connect with --udp
   let reversed = net.connect(argv.R[1], argv.R[0]);
-  /*reversed.on('error', (err) => console.log(Date.now(), 'reversed error', err));
+  reversed.on('error', (err) => console.log(Date.now(), 'reversed error', err));
   reversed.on('timeout', () => console.log(Date.now(), 'reversed timeout'));
   reversed.on('end', () => console.log(Date.now(), 'reversed ended'));
-  reversed.on('drain', () => console.log(Date.now(), 'reversed drained'));
+  // reversed.on('drain', () => console.log(Date.now(), 'reversed drained'));
   reversed.on('finish', () => console.log(Date.now(), 'reversed finished'));
-  reversed.on('close', () => console.log(Date.now(), 'reversed closed'));*/
+  reversed.on('close', () => console.log(Date.now(), 'reversed closed'));
 
   // handle errors
   client.on('error', reversed.destroy);
   reversed.on('error', client.destroy);
 
   // automatic "end and destroy" after server.close()
-  let clientEnd = () => {
-    client.end();
-  };
+  let clientEnd = () => client.end();
   server.once('$closing', clientEnd);
   client.once('close', () => server.off('$closing', clientEnd));
 
@@ -102,16 +113,12 @@ server.on('connection', function (client) {
   reversed.on('close', () => client.destroy());
 });
 
-server.on('close', () => {
-  console.log('server closed');
-});
-
-server.on('error', (err) => {
-  console.log('server error', err);
-});
-
 server.listen(serverKeys, function () {
-  console.log('Server is listening on:\n' + server.publicKey.toString('hex'));
+  console.log('The ' + (argv.keys ? '' : 'temporal ') + 'public key is:');
+  console.log(server.publicKey.toString('hex'));
+
+  let serverAddress = server.address();
+  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
 });
 
 // + what happens if Remote lost internet?
@@ -127,4 +134,5 @@ process.once('SIGINT', function () {
   server.server.discovery.destroy({ force: true }); // fix: fast server close
   server.close();
   server.emit('$closing');
+  // + should get all sockets and end them instead of custom event
 });

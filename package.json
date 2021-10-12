@@ -1,7 +1,7 @@
 {
   "name": "hyperforward",
   "version": "0.3.35",
-  "description": "Forwarding via Hyperswarm (p2p) + Noise Protocol (e2e encrypted)",
+  "description": "Forward p2p e2e encrypted (Hyperswarm/discovery + Noise Protocol)",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,15 +24,13 @@
     "forward",
     "p2p",
     "e2e",
-    "encrypted"
+    "encrypted",
+    "discovery",
+    "noise",
+    "hyperswarm"
   ],
   "dependencies": {
-    "hyperswarm": "^2.15.3",
     "minimist": "^1.2.5",
-    "noise-network": "github:LuKks/noise-network",
-    "noise-peer": "^2.1.1",
-    "pump": "^3.0.0",
-    "sodium-native": "^3.2.1",
-    "utp-native": "^2.5.3"
+    "noise-network": "github:LuKks/noise-network"
   }
 }

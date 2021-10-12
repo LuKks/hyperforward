@@ -1,165 +1,125 @@
-const hyperswarm = require('hyperswarm');
-const crypto = require('crypto');
+const noise = require('noise-network');
 const net = require('net');
-const pump = require('pump');
-const noisePeer = require('noise-peer');
 const fs = require('fs');
-const sodium = require('sodium-native');
 const argv = require('minimist')(process.argv.slice(2));
 const homedir = require('os').homedir();
 
-console.log('argv', argv);
+argv.keys = (argv.keys || '').trim();
 
-// hyperforward -L 127.0.0.1:3000 --keys=crst --join=lks
+argv.join = (argv.join || '').trim();
+if (!argv.join) {
+  throw new Error('--join is required (name or public key, comma separated)');
+}
+argv.join = argv.join.split(','); // => [ 'crst' ]
 
-let keys = (argv.keys || '').trim();
-keys = 'noise' + (keys ? '_' + keys : '');
-console.log('keys', keys);
+argv.L = (argv.L || '').trim().split(':'); // => [ '127.0.0.1', '4001' ]
+// valid ports: [tcp: 1-65535] [udp: 0-65535 (optional)]
+// + should support udp port with --udp
+argv.L[1] = parseInt(argv.L[1]);
+if (!argv.L[0] || !argv.L[1]) {
+  throw new Error('-L is invalid (address:port)');
+}
+if (argv.L[1] < 1 || argv.L[1] > 65535) {
+  throw new Error('-L port is invalid (1-65535)');
+}
 
-let join = (argv.join || '').trim();
-join = 'noise' + (join ? '_' + join : '');
-console.log('join', join);
-
-let localReverse = (argv.L || '').trim().split(':');
-console.log('local', localReverse);
-
-const serverPublicKey = Buffer.from(fs.readFileSync(homedir + '/.ssh/' + join + '.pub', 'utf8'), 'hex');
-const clientKeys = {
-  publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/' + keys + '.pub', 'utf8'), 'hex'),
-  secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/' + keys, 'utf8'), 'hex')
-};
-const topic = discoveryKey(maybeConvertKey(serverPublicKey));
-
-console.log('serverPublicKey', serverPublicKey);
-console.log('clientKeys.publicKey', clientKeys.publicKey);
-console.log('topic', topic);
-
-const swarm = hyperswarm({
-  announceLocalAddress: true
-});
-
-swarm.once('connection', (socket, info) => {
-  console.log('new connection!', 'socket', socket.remoteAddress, socket.remotePort, socket.remoteFamily, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-
-  socket.on('error', socket.destroy);
-
-  swarm.leave(topic, () => console.log('swarm leaved (connection)'));
-
-  socket.on('error', (err) => console.log('raw socket error', err));
-  socket.on('end', () => console.log('raw socket ended'));
-  socket.on('close', () => console.log('raw socket closed'));
-
-  // client server encrypted
-  let socketSecure = noisePeer(socket, true, {
-    pattern: 'XK',
-    staticKeyPair: clientKeys,
-    remoteStaticKey: serverPublicKey
-  });
-
-  let myLocalServer = net.createServer(function onconnection (rawStream) {
-    console.log('myLocalServer onconnection');
-
-    rawStream.on('error', (err) => {
-      console.log('rawStream error', err);
-    });
-    rawStream.on('end', () => {
-      console.log('rawStream ended', info.type);
-    });
-    rawStream.on('close', () => {
-      console.log('rawStream closed');
-    });
-
-    socketSecure.on('end', () => {
-      rawStream.end();
-    });
-    socketSecure.on('close', () => {
-      rawStream.end(); // + should call destroy after end
-    });
-
-    rawStream.on('data', (chunk) => {
-      console.log('rawStream data', chunk.length);
-      socketSecure.write(chunk);
-    });
-    socketSecure.on('data', (chunk) => {
-      console.log('socketSecure data', chunk.length);
-      if (rawStream.ending || rawStream.ended || rawStream.finished || rawStream.destroyed || rawStream.closed) {
-        return;
-      }
-      rawStream.write(chunk);
-    });
-
-    // pump(rawStream, socketSecure, rawStream);
-  });
-
-  myLocalServer.listen(localReverse[1] || 0, localReverse[0], function () {
-    let serverAddress = myLocalServer.address();
-    console.log('local forward:', { address: serverAddress.address, port: serverAddress.port });
-  });
-
-  socketSecure.on('error', (err) => {
-    console.log('socketSecure error', err);
-  });
-  socketSecure.on('end', () => {
-    console.log('socketSecure ended');
-  });
-  socketSecure.on('close', () => {
-    console.log('socketSecure closed', info.type);
-  });
-
-  socket.on('end', () => {
-    socketSecure.end();
-  });
-});
-
-swarm.on('disconnection', (socket, info) => {
-  console.log('disconnection', 'socket?', socket ? true : false, 'type', info.type, 'client', info.client, 'info peer', info.peer ? [info.peer.host, info.peer.port, 'local?', info.peer.local] : info.peer);
-});
-
-swarm.on('updated', ({ key }) => {
-  console.log('updated', key);
-
-  if (!swarm.connections.size) {
-    console.log('keep waiting an incoming connection..');
-    // swarm.destroy();
+const serverPublicKeys = argv.join.map(join => {
+  if (join === '*' || join.length > 21) {
+    return join;
+  }
+  if (join.length <= 21) {
+    return Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + join + '.pub', 'utf8').trim(), 'hex');
   }
 });
 
-swarm.on('close', () => {
-  console.log('swarm close');
-  process.exit();
+let clientKeys;
+if (argv.keys) {
+  clientKeys = {
+    publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys + '.pub', 'utf8').trim(), 'hex'),
+    secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys, 'utf8').trim(), 'hex')
+  };
+} else {
+  clientKeys = noise.keygen();
+}
+
+// + maybe start a lookup for Remote in case it doesn't exists alert the user
+
+const server = net.createServer();
+
+server.on('error', (err) => console.log('server error', err));
+server.on('close', () => console.log('server closed'));
+server.on('connection', function (rawStream) {
+  console.log(Date.now(), 'connected to server');
+
+  // reuse first socket or connect new one (tcp/utp)
+  // + should add --timeout and --timeout-handshake
+  let client = noise.connect(serverPublicKeys[0], clientKeys);
+  client.on('error', (err) => console.log(Date.now(), 'client error', err));
+  client.on('connect', () => console.log(Date.now(), 'client connect'));
+  client.on('handshake', () => console.log(Date.now(), 'client handshake'));
+  client.on('connected', () => console.log(Date.now(), 'client connected'));
+  client.on('timeout', () => console.log(Date.now(), 'client timeout'));
+  client.on('end', () => console.log(Date.now(), 'client ended'));
+  // client.on('drain', () => console.log(Date.now(), 'client drained'));
+  client.on('finish', () => console.log(Date.now(), 'client finished'));
+  client.on('close', () => console.log(Date.now(), 'client closed'));
+
+  rawStream.on('error', (err) => console.log(Date.now(), 'rawStream error', err));
+  rawStream.on('timeout', () => console.log(Date.now(), 'rawStream timeout'));
+  rawStream.on('end', () => console.log(Date.now(), 'rawStream ended'));
+  // rawStream.on('drain', () => console.log(Date.now(), 'rawStream drained'));
+  rawStream.on('finish', () => console.log(Date.now(), 'rawStream finished'));
+  rawStream.on('close', () => console.log(Date.now(), 'rawStream closed'));
+
+  // handle errors
+  rawStream.on('error', client.destroy);
+  client.on('error', rawStream.destroy);
+
+  // automatic "end and destroy" after server.close()
+  let clientEnd = () => client.end();
+  server.once('$closing', clientEnd);
+  client.once('close', () => server.off('$closing', clientEnd));
+
+  // mimic local to remote
+  rawStream.on('data', (chunk) => client.write(chunk));
+  rawStream.on('end', () => client.end());
+  rawStream.on('finish', () => {
+    rawStream.destroy();
+    // may have already ended
+    client.end();
+  });
+  rawStream.on('close', () => client.destroy());
+
+  // mimic remote to local
+  client.on('data', (chunk) => rawStream.write(chunk));
+  client.on('end', () => rawStream.end());
+  client.on('finish', () => {
+    client.destroy();
+    rawStream.end();
+  });
+  client.on('close', () => rawStream.destroy());
 });
 
-swarm.join(topic, {
-  lookup: true,
-  announce: false,
+server.listen(argv.L[1] || 0, argv.L[0], function () {
+  console.log('The ' + (argv.keys ? '' : 'temporal ') + 'public key is:');
+  console.log(clientKeys.publicKey.toString('hex'));
+
+  let serverAddress = server.address();
+  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
 });
+
+// + what happens if Client lost internet?
+// + --reconnect
 
 process.once('SIGINT', function () {
-  swarm.once('close', function () {
-    process.exit();
-  });
-  swarm.destroy();
-  setTimeout(() => process.exit(), 2000);
+  console.log(Date.now(), 'SIGINT');
+
+  // just in case event loop somehow is not empty
+  setTimeout(() => process.exit(), 1000);
+  server.once('close', () => process.exit());
+
+  // server.server.discovery.destroy({ force: true }); // fix: fast server close
+  server.close();
+  server.emit('$closing');
+  // + should get all sockets and end them instead of custom event
 });
-
-function createHash (algo, name) {
-  return crypto.createHash(algo).update(name).digest();
-}
-
-function discoveryKey (publicKey) {
-  const buf = Buffer.alloc(32);
-  const str = Buffer.from('hyperforward');
-  sodium.crypto_generichash(buf, str, publicKey);
-  return buf
-}
-
-function maybeConvertKey (key) {
-  return typeof key === 'string' ? Buffer.from(key, 'hex') : key;
-}
-
-function maybeConvertKeyPair (keys) {
-  return {
-    publicKey: maybeConvertKey(keys.publicKey),
-    secretKey: maybeConvertKey(keys.secretKey)
-  };
-}
