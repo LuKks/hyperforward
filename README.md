@@ -106,6 +106,17 @@ hyperforward print lks
 # dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
 ```
 
+#### List keys
+```bash
+# use: hyperforward ls
+hyperforward ls lks
+# My pair keys:
+# 1) lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
+
+# Known peers:
+# 1) crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
+```
+
 #### Temporal server authentication
 Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)\
 ```bash
