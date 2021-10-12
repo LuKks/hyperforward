@@ -1,6 +1,6 @@
 {
   "name": "hyperforward",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)",
   "main": "index.js",
   "scripts": {
