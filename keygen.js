@@ -12,6 +12,9 @@ console.log('Generating public/secret noise key pair.');
 // The key fingerprint is:
 
 let name = (argv._[1] || '').trim();
+if (!name.length) {
+  throw new Error('Name is required');
+}
 if (name.length > 21) {
   throw new Error('Name max length must be 21');
 }
