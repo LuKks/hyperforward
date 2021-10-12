@@ -4,7 +4,7 @@ const fs = require('fs');
 const argv = require('minimist')(process.argv.slice(2));
 const homedir = require('os').homedir();
 
-argv.keys = (argv.keys || '').trim();
+argv.from = (argv.from || '').trim();
 
 argv.join = (argv.join || '').trim();
 if (!argv.join) {
@@ -33,10 +33,10 @@ const serverPublicKeys = argv.join.map(join => {
 });
 
 let clientKeys;
-if (argv.keys) {
+if (argv.from) {
   clientKeys = {
-    publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys + '.pub', 'utf8').trim(), 'hex'),
-    secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.keys, 'utf8').trim(), 'hex')
+    publicKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.from + '.pub', 'utf8').trim(), 'hex'),
+    secretKey: Buffer.from(fs.readFileSync(homedir + '/.ssh/noise_' + argv.from, 'utf8').trim(), 'hex')
   };
 } else {
   clientKeys = noise.keygen();
@@ -101,7 +101,7 @@ server.on('connection', function (rawStream) {
 });
 
 server.listen(argv.L[1] || 0, argv.L[0], function () {
-  console.log('The ' + (argv.keys ? '' : 'temporal ') + 'public key is:');
+  console.log('The ' + (argv.from ? '' : 'temporal ') + 'public key is:');
   console.log(clientKeys.publicKey.toString('hex'));
 
   let serverAddress = server.address();

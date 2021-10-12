@@ -49,7 +49,7 @@ npm i -g hyperforward
 ```
 
 ## Examples
-#### keygen
+#### Generate a public/secret noise key pair
 ```bash
 # use: hyperforward keygen [name]
 
@@ -69,15 +69,14 @@ hyperforward keygen crst
 # 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
 ```
 
-#### add
-Add to known clients
+#### Add to known peers
 ```bash
 # use: hyperforward add [name] [public_key]
 
 # on lks's computer
 hyperforward add crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
 # The public key is named:
-# [lks] (7fb3...b57f)
+# [crst] (7fb3...b57f)
 
 # on crst's computer
 hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
@@ -85,23 +84,21 @@ hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb516
 # [lks] (dce0...e555)
 ```
 
-#### -R
-Listen remote forward (server)
+#### Listen remote forward (server)
 ```bash
 # use: hyperforward --from [public_key] -R [remote_address:port] --clients [asterisk or list of names or public keys]
 hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 # --clients: only names or public keys (comma separated) are allowed to connect
 ```
 
-#### -L
-Connect local forward (client)
+#### Connect local forward (client)
 ```bash
 # use: hyperforward --from [public_key] -L [local_address:port] --connect [public_key]
 hyperforward --from crst -L 127.0.0.1:3000 --connect lks
 # --connect: only --clients specified in remote (-R) can connect
 ```
 
-#### print
+#### Print the public key
 ```bash
 # use: hyperforward print [name]
 hyperforward print lks
@@ -110,7 +107,7 @@ hyperforward print lks
 ```
 
 #### Temporal server authentication
-Don't set `--from` in `-R` (will keygen a temporal pair keys in memory).\
+Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)\
 ```bash
 # server:
 hyperforward -R 127.0.0.1:3000 --clients crst
@@ -122,7 +119,7 @@ hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15
 ```
 
 #### Temporal client authentication
-Don't set `--from` in `-L` (will keygen a temporal pair keys in memory).\
+Don't set `--from` in `-L` (will keygen a temporal pair keys in memory)\
 ```bash
 # example server listen:
 hyperforward --from lks -R 127.0.0.1:3000 --clients crst
