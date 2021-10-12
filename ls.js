@@ -9,8 +9,9 @@ let secretKeys = files.filter(file => file.startsWith('noise_') === 0 && !file.e
 console.log('List of my pair keys: (only prints public keys)');
 let myPairKeys = false;
 for (let publicKey of publicKeys) {
-  let name = publicKey.substr(0, publicKey.length - 4);
-  let hasSecretKey = secretKeys.indexOf(name) > -1;
+  let name = publicKey.substring(6, publicKey.length - 4);
+  let secretKey = publicKey.substring(0, publicKey.length - 4);
+  let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
   if (hasSecretKey) {
     myPairKeys = true;
     console.log(name);
@@ -24,8 +25,9 @@ console.log();
 console.log('List of known peers:');
 let knownPeers = false;
 for (let publicKey of publicKeys) {
-  let name = publicKey.substr(0, publicKey.length - 4);
-  let hasSecretKey = secretKeys.indexOf(name) > -1;
+  let name = publicKey.substring(6, publicKey.length - 4);
+  let secretKey = publicKey.substring(0, publicKey.length - 4);
+  let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
   if (!hasSecretKey) {
     knownPeers = true;
     console.log(name);
