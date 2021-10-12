@@ -87,6 +87,7 @@ hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb516
 #### Listen remote forward (server)
 ```bash
 # use: hyperforward --from [public_key] -R [remote_address:port] --clients [asterisk or list of names or public keys]
+
 hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 # --clients: only names or public keys (comma separated) are allowed to connect
 ```
@@ -94,6 +95,7 @@ hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 #### Connect local forward (client)
 ```bash
 # use: hyperforward --from [public_key] -L [local_address:port] --connect [public_key]
+
 hyperforward --from crst -L 127.0.0.1:3000 --connect lks
 # --connect: only --clients specified in remote (-R) can connect
 ```
@@ -101,6 +103,7 @@ hyperforward --from crst -L 127.0.0.1:3000 --connect lks
 #### Print the public key
 ```bash
 # use: hyperforward print [name]
+
 hyperforward print lks
 # The public key is:
 # dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
@@ -109,12 +112,25 @@ hyperforward print lks
 #### List keys
 ```bash
 # use: hyperforward ls
+
 hyperforward ls lks
 # My pair keys:
 # 1) lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
 
 # Known peers:
 # 1) crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
+```
+
+#### Remove public key and pair key
+```bash
+# use: hyperforward rm [name]
+
+hyperforward rm lks
+# Public key is now deleted: /home/lucas/.ssh/noise_lks.pub
+# Secret key is now deleted: /home/lucas/.ssh/noise_lks
+
+hyperforward rm crst
+# Public key is now deleted: /home/lucas/.ssh/noise_crst.pub
 ```
 
 #### Temporal server authentication
