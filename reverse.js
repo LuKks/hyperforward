@@ -78,23 +78,20 @@ server.on('connection', function (client) {
   client.once('close', () => server.off('$closing', clientEnd));
 
   client.on('data', (chunk) => reversed.write(chunk));
-  client.on('end', () => {
-    // client.end();
-    reversed.end();
-  });
+  client.on('end', () => reversed.end());
   client.on('finish', () => {
     client.destroy();
-    // reversed may have already ended
+    // may have already ended
     reversed.end();
   });
   client.on('close', () => reversed.destroy());
 
   reversed.on('data', (chunk) => client.write(chunk));
+  reversed.on('end', () => client.end());
   reversed.on('finish', () => {
     reversed.destroy();
     client.end();
   });
-  reversed.on('end', () => client.end());
   reversed.on('close', () => client.destroy());
 
   // + will not allow reconnect (default behaviour)?

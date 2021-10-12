@@ -53,35 +53,28 @@ let server = net.createServer(function (rawStream) {
   client.on('error', rawStream.destroy);
 
   // automatic "end and destroy" after server.close()
-  server.once('$closing', endAndDestroy);
-  client.once('close', () => server.off('$closing', endAndDestroy));
-  function endAndDestroy () {
-    client.once('finish', client.destroy);
-    client.end();
-  }
+  let clientEnd = () => client.end();
+  server.once('$closing', clientEnd);
+  client.once('close', () => server.off('$closing', clientEnd));
 
   // mimic local to remote
   rawStream.on('data', (chunk) => client.write(chunk));
   rawStream.on('end', () => client.end());
   rawStream.on('finish', () => {
     rawStream.destroy();
+    // may have already ended
     client.end();
   });
   rawStream.on('close', () => client.destroy());
 
   // mimic remote to local
   client.on('data', (chunk) => rawStream.write(chunk));
-  client.on('end', () => {
-    rawStream.end();
-    // client.end();
-  });
+  client.on('end', () => rawStream.end());
   client.on('finish', () => {
     client.destroy();
     rawStream.end();
   });
   client.on('close', () => rawStream.destroy());
-
-  // reconnect
 
   // + will not allow reconnect (default behaviour)?
   // rawStream.on('close', () => server.close());
