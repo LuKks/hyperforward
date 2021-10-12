@@ -4,37 +4,43 @@ const homedir = require('os').homedir();
 
 let files = getFiles(homedir + '/.ssh/');
 let publicKeys = files.filter(file => file.startsWith('noise_') && file.endsWith('.pub'));
-let secretKeys = files.filter(file => file.startsWith('noise_') === 0 && !file.endsWith('.pub'));
+let secretKeys = files.filter(file => file.startsWith('noise_') && !file.endsWith('.pub'));
 
-console.log('List of my pair keys: (only prints public keys)');
+console.log('My pair keys:');
 let myPairKeys = false;
-for (let publicKey of publicKeys) {
+for (let i = 0, count = 0; i < publicKeys.length; i++) {
+  let publicKey = publicKeys[i];
   let name = publicKey.substring(6, publicKey.length - 4);
   let secretKey = publicKey.substring(0, publicKey.length - 4);
   let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
   if (hasSecretKey) {
     myPairKeys = true;
-    console.log(name);
+    count++;
+    let hex = fs.readFileSync(homedir + '/.ssh/noise_' + name + '.pub', 'utf8').trim();
+    console.log(count + ')', name, hex);
   }
 }
 if (!myPairKeys) {
-  console.log('Empty');
+  console.log('None');
 }
 console.log();
 
-console.log('List of known peers:');
+console.log('Known peers:');
 let knownPeers = false;
-for (let publicKey of publicKeys) {
+for (let i = 0, count = 0; i < publicKeys.length; i++) {
+  let publicKey = publicKeys[i];
   let name = publicKey.substring(6, publicKey.length - 4);
   let secretKey = publicKey.substring(0, publicKey.length - 4);
   let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
   if (!hasSecretKey) {
     knownPeers = true;
-    console.log(name);
+    count++;
+    let knownPublicKey = fs.readFileSync(homedir + '/.ssh/noise_' + name + '.pub', 'utf8').trim();
+    console.log(count + ')', name, knownPublicKey/*filename that holds the public key*/);
   }
 }
 if (!knownPeers) {
-  console.log('Empty');
+  console.log('None');
 }
 
 function getFiles (source) {
