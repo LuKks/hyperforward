@@ -4,6 +4,11 @@ Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
+## Install
+```
+npm i -g hyperforward
+```
+
 Public connection:
 ```bash
 # server: listen remote forward
@@ -41,11 +46,6 @@ hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 
 # client: friend connect local forward
 hyperforward --from crst -L 127.0.0.1:3000 --connect lks
-```
-
-## Install
-```
-npm i -g hyperforward
 ```
 
 ## Examples
