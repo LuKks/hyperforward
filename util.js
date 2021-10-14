@@ -82,10 +82,10 @@ function maybeKeygen (peer) {
   };
 }
 
-function endAfterServerClose (peer, server) {
-  let clientEnd = () => peer.end();
+function endAfterServerClose (socket, server) {
+  let clientEnd = () => socket.end();
   server.once('$closing', clientEnd);
-  peer.once('close', () => server.off('$closing', clientEnd));
+  socket.once('close', () => server.off('$closing', clientEnd));
 }
 
 function serverClose (server, { isNoise, timeoutExit }) {

@@ -68,8 +68,7 @@ function Remote (keyPair, remoteAddress, peers, cb) {
     console.log(Date.now(), 'Remote connection');
 
     let remote = ConnectTCP(remoteAddress);
-
-    endAfterServerClose(peer, server); // automatic "end and destroy" after server closes
+    endAfterServerClose(peer, server);
 
     mimic(peer, remote); // replicate peer actions to -> remote
     mimic(remote, peer); // replicate remote actions to -> peer
@@ -81,14 +80,13 @@ function Remote (keyPair, remoteAddress, peers, cb) {
 function Local (publicKey, localAddress, keyPair, cb) {
   if (!cb) cb = () => {};
 
-  const server = ListenTCP(localAddress); // // topic.on('peer'
+  const server = ListenTCP(localAddress, cb); // topic.on('peer'
 
   server.on('connection', function (local) {
     console.log(Date.now(), 'Local connection');
 
     let peer = ConnectNoise(publicKey, keyPair);
-
-    endAfterServerClose(peer, server); // automatic "end and destroy" after server closes
+    endAfterServerClose(peer, server);
 
     mimic(local, peer); // replicate local actions to -> peer
     mimic(peer, local); // replicate peer actions to -> local
