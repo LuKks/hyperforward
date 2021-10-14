@@ -81,7 +81,7 @@ function Remote (keyPair, remoteAddress, peers, cb) {
     endAfterServerClose(peer, server);
 
     mimic(peer, remote); // replicate peer actions to -> remote
-    mimic(remote, peer); // replicate remote actions to -> peer
+    mimic(remote, peer, { reuse: true }); // replicate remote actions to -> peer
   });
 
   return server;
