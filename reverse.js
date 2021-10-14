@@ -14,7 +14,7 @@ argv.D = (argv.D || '').trim();
 
 // states
 let isDynamic = !argv.R && argv.D && argv.peers;
-let isRandom = !!argv.from;
+let isRandom = !argv.from;
 
 // parse and validate args
 argv.from = maybeKeygen(argv.from);
