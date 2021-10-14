@@ -104,8 +104,8 @@ function Local (publicKey, localAddress, keyPair, cb) {
     mimic(peer, local); // replicate peer actions to -> local
   });
 
-  let mainPeer = ConnectNoise(publicKey, keyPair);
-  endAfterServerClose(mainPeer, server);
+  // let mainPeer = ConnectNoise(publicKey, keyPair);
+  // endAfterServerClose(mainPeer, server);
 
   return server;
 }
