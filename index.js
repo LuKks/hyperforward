@@ -13,6 +13,8 @@ module.exports = {
 };
 
 function ListenNoise (keyPair, peers, cb) {
+  console.log('ListenNoise', { keyPair, peers, cb: !!cb });
+
   if (!cb) cb = () => {};
 
   const server = noise.createServer({ announceLocalAddress: true, lookup: true, validate: onstatickey(peers) });
@@ -28,6 +30,8 @@ function ListenNoise (keyPair, peers, cb) {
 }
 
 function ListenTCP (addressPort, cb) {
+  console.log('ListenTCP', { addressPort, cb: !!cb });
+
   if (!cb) cb = () => {};
 
   const server = net.createServer(); // // topic.on('peer'
@@ -43,6 +47,8 @@ function ListenTCP (addressPort, cb) {
 }
 
 function ConnectNoise (publicKey, keyPair) {
+  console.log('ConnectNoise', { publicKey, keyPair });
+
   // + should support udp connect with --udp
   // + should add --timeout and --timeout-handshake
   // reuse first socket or connect new one (tcp/utp
@@ -53,6 +59,8 @@ function ConnectNoise (publicKey, keyPair) {
 }
 
 function ConnectTCP (addressPort) {
+  console.log('ConnectTCP', { addressPort });
+
   // + should support udp connect with --udp
   // + should add --timeout and --timeout-handshake
   // reuse first socket or connect new one (tcp/utp
@@ -62,6 +70,8 @@ function ConnectTCP (addressPort) {
 }
 
 function Remote (keyPair, remoteAddress, peers, cb) {
+  console.log('Remote', { keyPair, remoteAddress, peers, cb: !!cb });
+
   const server = ListenNoise(keyPair, peers, cb);
 
   server.on('connection', function (peer) {
@@ -78,6 +88,8 @@ function Remote (keyPair, remoteAddress, peers, cb) {
 }
 
 function Local (publicKey, localAddress, keyPair, cb) {
+  console.log('Local', { publicKey, localAddress, keyPair, cb: !!cb });
+
   if (!cb) cb = () => {};
 
   const server = ListenTCP(localAddress, cb); // topic.on('peer'
