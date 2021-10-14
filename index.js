@@ -75,7 +75,7 @@ function Remote (keyPair, remoteAddress, peers, cb) {
   const server = ListenNoise(keyPair, peers, cb);
 
   server.on('connection', function (peer) {
-    console.log(Date.now(), 'Remote connection');
+    console.log(Date.now(), 'Remote connection', peer);
 
     let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
     endAfterServerClose(peer, server);
@@ -97,15 +97,18 @@ function Local (publicKey, localAddress, keyPair, cb) {
   server.on('connection', function (local) {
     console.log(Date.now(), 'Local connection');
 
-    let peer = ConnectNoise(publicKey, keyPair);
-    endAfterServerClose(peer, server);
+    // let peer = ConnectNoise(publicKey, keyPair);
+    // endAfterServerClose(peer, server);
 
-    mimic(local, peer); // replicate local actions to -> peer
-    mimic(peer, local); // replicate peer actions to -> local
+    // mimic(local, peer); // replicate local actions to -> peer
+    // mimic(peer, local); // replicate peer actions to -> local
+
+    mimic(local, mainPeer); // replicate local actions to -> peer
+    mimic(mainPeer, local); // replicate peer actions to -> local
   });
 
-  // let mainPeer = ConnectNoise(publicKey, keyPair);
-  // endAfterServerClose(mainPeer, server);
+  let mainPeer = ConnectNoise(publicKey, keyPair);
+  endAfterServerClose(mainPeer, server);
 
   return server;
 }
