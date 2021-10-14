@@ -45,9 +45,9 @@ function parseAddressPort (hostname) {
 
 function mimic (src, dst, opts) {
   let { reuse } = opts || {};
-  !reuse && src.on('error', dst.destroy);
+  src.on('error', reuse ? src.destroy : dst.destroy);
   src.on('data', (chunk) => dst.write(chunk));
-  !reuse && src.on('end', () => dst.end());
+  src.on('end', () => reuse ? src.destroy() || dst.end());
   src.on('finish', () => {
     src.destroy();
     // may have already ended
