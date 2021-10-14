@@ -29,8 +29,8 @@ function ListenNoise (keyPair, peers, cb) {
   return server;
 }
 
-function ListenTCP (addressPort, cb) {
-  console.log('ListenTCP', { addressPort, cb: !!cb });
+function ListenTCP (port, address, cb) {
+  console.log('ListenTCP', { port, address, cb: !!cb });
 
   if (!cb) cb = () => {};
 
@@ -41,7 +41,7 @@ function ListenTCP (addressPort, cb) {
   server.on('connection', addSocketLogs);
 
   // + should support udp connect with --udp
-  server.listen(addressPort[1] || 0, addressPort[0], cb);
+  server.listen(port || 0, address, cb);
 
   return server;
 }
@@ -58,13 +58,13 @@ function ConnectNoise (publicKey, keyPair) {
   return peer;
 }
 
-function ConnectTCP (addressPort) {
-  console.log('ConnectTCP', { addressPort });
+function ConnectTCP (address, port) {
+  console.log('ConnectTCP', { address, port });
 
   // + should support udp connect with --udp
   // + should add --timeout and --timeout-handshake
   // reuse first socket or connect new one (tcp/utp
-  let socket = net.connect(addressPort[1], addressPort[0]);
+  let socket = net.connect(port, address);
   addSocketLogs(socket);
   return socket;
 }
@@ -77,7 +77,7 @@ function Remote (keyPair, remoteAddress, peers, cb) {
   server.on('connection', function (peer) {
     console.log(Date.now(), 'Remote connection');
 
-    let remote = ConnectTCP(remoteAddress);
+    let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
     endAfterServerClose(peer, server);
 
     mimic(peer, remote); // replicate peer actions to -> remote
@@ -92,7 +92,7 @@ function Local (publicKey, localAddress, keyPair, cb) {
 
   if (!cb) cb = () => {};
 
-  const server = ListenTCP(localAddress, cb); // topic.on('peer'
+  const server = ListenTCP(localAddress.port, localAddress.address, cb); // topic.on('peer'
 
   server.on('connection', function (local) {
     console.log(Date.now(), 'Local connection');
