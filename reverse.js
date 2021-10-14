@@ -29,7 +29,7 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
 // + maybe start a lookup for Client in case it already exists to connect even faster
 
 const server = Remote(argv.from, argv.R, argv.peers, function () {
-  console.log('The ' + (isRandom ? '' : 'temporal ') + 'public key is:');
+  console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(server.publicKey.toString('hex'));
 
   // let serverAddress = server.address();
