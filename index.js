@@ -81,7 +81,7 @@ function Remote (keyPair, remoteAddress, peers, cb) {
     endAfterServerClose(peer, server);
 
     mimic(peer, remote); // replicate peer actions to -> remote
-    mimic(remote, peer, { reuse: true }); // replicate remote actions to -> peer
+    mimic(remote, peer); // replicate remote actions to -> peer
   });
 
   return server;
@@ -97,18 +97,15 @@ function Local (publicKey, localAddress, keyPair, cb) {
   server.on('connection', function (local) {
     console.log(Date.now(), 'Local connection');
 
-    // let peer = ConnectNoise(publicKey, keyPair);
-    // endAfterServerClose(peer, server);
+    let peer = ConnectNoise(publicKey, keyPair);
+    endAfterServerClose(peer, server);
 
-    // mimic(local, peer); // replicate local actions to -> peer
-    // mimic(peer, local); // replicate peer actions to -> local
-
-    mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
-    mimic(mainPeer, local); // replicate peer actions to -> local
+    mimic(local, peer); // replicate local actions to -> peer
+    mimic(peer, local); // replicate peer actions to -> local
   });
 
-  let mainPeer = ConnectNoise(publicKey, keyPair);
-  endAfterServerClose(mainPeer, server);
+  // let mainPeer = ConnectNoise(publicKey, keyPair);
+  // endAfterServerClose(mainPeer, server);
 
   return server;
 }
