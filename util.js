@@ -7,6 +7,7 @@ module.exports = {
   mimic,
   onstatickey,
   maybeKeygen,
+  endAfterServerClose,
   serverClose,
   addNoiseLogs,
   addSocketLogs
