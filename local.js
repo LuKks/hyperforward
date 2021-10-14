@@ -8,12 +8,12 @@ const homedir = require('os').homedir();
 
 // clean args
 argv.from = (argv.from || '').trim();
-argv.peers = (argv.peers || '').trim();
+argv.connect = (argv.connect || '').trim();
 argv.L = (argv.L || '').trim();
 argv.D = (argv.D || '').trim();
 
 // states
-let isDynamic = !argv.L && argv.D && argv.peers;
+let isDynamic = !argv.L && argv.D && argv.connect;
 let isRandom = !!argv.from;
 
 // parse and validate args
@@ -23,12 +23,12 @@ argv.L = parseAddressPort(argv.L);
 if (argv.L === 1) throw new Error('-L is invalid (address:port)');
 if (argv.L === 2) throw new Error('-L port range is invalid (1-65535)');
 
-argv.peers = parsePeers(argv.peers);
-if (argv.peers === 1) throw new Error('--peers is required (name or public key, comma separated)');
+argv.connect = parsePeers(argv.connect);
+if (argv.connect === 1) throw new Error('--connect is required (name or public key, comma separated)');
 
 // + maybe start a lookup for Remote in case it doesn't exists alert the user
 
-const server = Local(argv.peers[0], argv.L, argv.from, function () {
+const server = Local(argv.connect[0], argv.L, argv.from, function () {
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(argv.from.publicKey.toString('hex'));
 
