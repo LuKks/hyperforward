@@ -80,8 +80,8 @@ function Remote (keyPair, remoteAddress, peers, cb) {
     let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
     endAfterServerClose(peer, server);
 
-    mimic(peer, remote); // replicate peer actions to -> remote
     mimic(remote, peer, { reuse: true }); // replicate remote actions to -> peer
+    mimic(peer, remote); // replicate peer actions to -> remote
   });
 
   return server;
