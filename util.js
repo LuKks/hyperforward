@@ -8,7 +8,8 @@ module.exports = {
   onstatickey,
   maybeKeygen,
   serverClose,
-  addNoiseLogs
+  addNoiseLogs,
+  addSocketLogs
 };
 
 function parsePeers (peers) {
