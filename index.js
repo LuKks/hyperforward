@@ -103,7 +103,7 @@ function Local (publicKey, localAddress, keyPair, cb) {
     // mimic(local, peer); // replicate local actions to -> peer
     // mimic(peer, local); // replicate peer actions to -> local
 
-    mimic(local, mainPeer); // replicate local actions to -> peer
+    mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
     mimic(mainPeer, local); // replicate peer actions to -> local
   });
 

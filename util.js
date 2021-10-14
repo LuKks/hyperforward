@@ -43,16 +43,17 @@ function parseAddressPort (hostname) {
   return { address, port };
 }
 
-function mimic (src, dst) {
-  src.on('error', dst.destroy);
+function mimic (src, dst, opts) {
+  let { reuse } = opts || {};
+  !reuse && src.on('error', dst.destroy);
   src.on('data', (chunk) => dst.write(chunk));
-  src.on('end', () => dst.end());
+  !reuse && src.on('end', () => dst.end());
   src.on('finish', () => {
     src.destroy();
     // may have already ended
-    dst.end();
+    !reuse && dst.end();
   });
-  src.on('close', () => dst.destroy());
+  !reuse && src.on('close', () => dst.destroy());
 }
 
 function onstatickey (clientPublicKeys) {
