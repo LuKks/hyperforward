@@ -17,7 +17,7 @@ function ListenNoise (keyPair, peers, cb) {
 
   if (!cb) cb = () => {};
 
-  const server = noise.createServer({ announceLocalAddress: true, lookup: false, validate: onstatickey(peers) });
+  const server = noise.createServer({ announceLocalAddress: false, lookup: false, validate: onstatickey(peers) });
 
   server.on('error', console.error);
   server.on('close', () => console.log('Listen closed'));
