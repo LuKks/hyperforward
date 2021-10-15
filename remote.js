@@ -39,8 +39,8 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
   console.log(argv.from.publicKey.toString('hex'));
 
   server.on('listening', () => {
-    // let serverAddress = server.address();
-    // console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+    let serverAddress = server.address();
+    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
   });
 
   // handle graceful exit
