@@ -33,7 +33,7 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
     keyPair: argv.from,
     remoteAddress: argv.R,
     peers: argv.peers,
-    cb: () => {
+    cb: function () {
       let serverAddress = server.address();
       console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
     }

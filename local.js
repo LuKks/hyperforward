@@ -33,7 +33,7 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
     remotePublicKey: argv.connect[0],
     localAddress: argv.L,
     keyPair: argv.from,
-    cb: () => {
+    cb: function () {
       let serverAddress = server.address();
       console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
     }
