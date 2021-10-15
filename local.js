@@ -28,17 +28,24 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
 
 // + maybe start a lookup for Remote in case it doesn't exists alert the user
 
-const server = Local(argv.connect[0], argv.L, argv.from, function () {
+(async () => {
+  const server = await Local({
+    remotePublicKey: argv.connect[0],
+    localAddress: argv.L,
+    keyPair: argv.from,
+  });
+
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(argv.from.publicKey.toString('hex'));
 
   let serverAddress = server.address();
   console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-});
+
+  // handle graceful exit
+  process.once('SIGINT', function () {
+    console.log(Date.now(), 'SIGINT');
+    serverClose(server, { isNoise: false, timeoutForceExit: 1000 });
+  });
+})();
 
 // + what happens if Local lost internet?--reconnect
-
-process.once('SIGINT', function () {
-  console.log(Date.now(), 'SIGINT');
-  serverClose(server, { isNoise: false, timeoutExit: 1000 });
-});

@@ -69,43 +69,47 @@ function ConnectTCP (address, port) {
   return socket;
 }
 
-function Remote (keyPair, remoteAddress, peers, cb) {
-  console.log('Remote', { keyPair, remoteAddress, peers, cb: !!cb });
+function Remote (keyPair, remoteAddress, peers) {
+  console.log('Remote', { keyPair, remoteAddress, peers });
 
-  const server = ListenNoise(keyPair, peers, cb);
+  return new Promise(resolve => {
+    const server = ListenNoise(keyPair, peers);
 
-  server.on('connection', function (peer) {
-    console.log(Date.now(), 'Remote connection', peer);
+    server.on('connection', function (peer) {
+      console.log(Date.now(), 'Remote connection', peer);
 
-    let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-    endAfterServerClose(peer, server);
+      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+      endAfterServerClose(peer, server);
 
-    mimic(peer, remote); // replicate peer actions to -> remote
-    mimic(remote, peer); // replicate remote actions to -> peer
+      mimic(peer, remote); // replicate peer actions to -> remote
+      mimic(remote, peer); // replicate remote actions to -> peer
+    });
+
+    resolve(server);
   });
-
-  return server;
 }
 
-function Local (publicKey, localAddress, keyPair, cb) {
-  console.log('Local', { publicKey, localAddress, keyPair, cb: !!cb });
+function Local ({ remotePublicKey, localAddress, keyPair }) {
+  console.log('Local', { remotePublicKey, localAddress, keyPair });
 
-  if (!cb) cb = () => {};
+  return new Promise(resolve => {
+    const server = ListenTCP(localAddress.port, localAddress.address); // topic.on('peer'
 
-  const server = ListenTCP(localAddress.port, localAddress.address, cb); // topic.on('peer'
+    // topic.on('peer', ...)
 
-  server.on('connection', function (local) {
-    console.log(Date.now(), 'Local connection');
+    server.on('connection', function (local) {
+      console.log(Date.now(), 'Local connection');
 
-    let peer = ConnectNoise(publicKey, keyPair);
-    endAfterServerClose(peer, server);
+      let peer = ConnectNoise(remotePublicKey, keyPair);
+      endAfterServerClose(peer, server);
 
-    mimic(local, peer); // replicate local actions to -> peer
-    mimic(peer, local); // replicate peer actions to -> local
+      mimic(local, peer); // replicate local actions to -> peer
+      mimic(peer, local); // replicate peer actions to -> local
+    });
+
+    // let mainPeer = ConnectNoise(remotePublicKey, keyPair);
+    // endAfterServerClose(mainPeer, server);
+
+    resolve(server);
   });
-
-  // let mainPeer = ConnectNoise(publicKey, keyPair);
-  // endAfterServerClose(mainPeer, server);
-
-  return server;
 }

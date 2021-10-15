@@ -28,17 +28,24 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
 
 // + maybe start a lookup for Client in case it already exists to connect even faster
 
-const server = Remote(argv.from, argv.R, argv.peers, function () {
+(async () => {
+  const server = await Remote({
+    keyPair: argv.from,
+    remoteAddress: argv.R,
+    peers: argv.peers
+  });
+
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(server.publicKey.toString('hex'));
 
   // let serverAddress = server.address();
   // console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-});
+
+  // handle graceful exit
+  process.once('SIGINT', function () {
+    console.log(Date.now(), 'SIGINT');
+    serverClose(server, { isNoise: true, timeoutForceExit: 1000 });
+  });
+})();
 
 // + what happens if Remote lost internet? --reconnect
-
-process.once('SIGINT', function () {
-  console.log(Date.now(), 'SIGINT');
-  serverClose(server, { isNoise: true, timeoutExit: 1000 });
-});
