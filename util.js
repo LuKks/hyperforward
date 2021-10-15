@@ -89,10 +89,11 @@ function endAfterServerClose (socket, server) {
   socket.once('close', () => server.off('$closing', clientEnd));
 }
 
-function serverClose (server, { isNoise, timeoutExit }) {
+function serverClose (server, { isNoise, timeoutForceExit }) {
   // just in case event loop somehow is not empty
-  if (timeoutExit > 0) {
-    setTimeout(() => process.exit(), timeoutExit);
+  if (timeoutForceExit === undefined) timeoutForceExit = 1000;
+  if (timeoutForceExit > 0) {
+    setTimeout(() => process.exit(), timeoutForceExit);
     server.once('close', () => process.exit());
   }
 
