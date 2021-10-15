@@ -44,6 +44,7 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
     console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
   });*/
   function onListening () {
+    console.log('onListening');
     let serverAddress = server.address();
     console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
   }
