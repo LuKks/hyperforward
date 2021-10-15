@@ -69,7 +69,7 @@ function ConnectTCP (address, port) {
   return socket;
 }
 
-function Remote (keyPair, remoteAddress, peers) {
+function Remote ({ keyPair, remoteAddress, peers }) {
   console.log('Remote', { keyPair, remoteAddress, peers });
 
   return new Promise(resolve => {
