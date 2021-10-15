@@ -73,6 +73,7 @@ function Remote ({ keyPair, remoteAddress, peers, cb }) {
   console.log('Remote', { keyPair, remoteAddress, peers });
 
   return new Promise(resolve => {
+    console.log('remote: listen noise');
     const server = ListenNoise(keyPair, peers, cb);
 
     console.log('remote: server on connection');
