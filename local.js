@@ -33,10 +33,7 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
     remotePublicKey: argv.connect[0],
     localAddress: argv.L,
     keyPair: argv.from,
-    cb: function () {
-      let serverAddress = server.address();
-      console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-    }
+    cb: onListening
   });
 
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
@@ -46,6 +43,10 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
     let serverAddress = server.address();
     console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
   });*/
+  function onListening () {
+    let serverAddress = server.address();
+    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  }
 
   // handle graceful exit
   process.once('SIGINT', function () {

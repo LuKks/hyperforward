@@ -33,10 +33,7 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
     keyPair: argv.from,
     remoteAddress: argv.R,
     peers: argv.peers,
-    cb: function () {
-      let serverAddress = server.address();
-      console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-    }
+    cb: onListening
   });
 
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
@@ -46,6 +43,10 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
     let serverAddress = server.address();
     console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
   });*/
+  function onListening () {
+    let serverAddress = server.address();
+    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  }
 
   // handle graceful exit
   process.once('SIGINT', function () {
