@@ -75,6 +75,7 @@ function Remote ({ keyPair, remoteAddress, peers, cb }) {
   return new Promise(resolve => {
     const server = ListenNoise(keyPair, peers, cb);
 
+    console.log('remote: server on connection');
     server.on('connection', function (peer) {
       console.log(Date.now(), 'Remote connection', peer);
 
@@ -85,15 +86,16 @@ function Remote ({ keyPair, remoteAddress, peers, cb }) {
       mimic(remote, peer); // replicate remote actions to -> peer
     });
 
+    console.log('remote: resolve promise');
     resolve(server);
   });
 }
 
-function Local ({ remotePublicKey, localAddress, keyPair, cb }) {
+function Local ({ remotePublicKey, localAddress, keyPair }) {
   console.log('Local', { remotePublicKey, localAddress, keyPair });
 
   return new Promise(resolve => {
-    const server = ListenTCP(localAddress.port, localAddress.address, cb); // topic.on('peer'
+    const server = ListenTCP(localAddress.port, localAddress.address, cb);
 
     // topic.on('peer', ...)
 
