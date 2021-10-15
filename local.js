@@ -38,8 +38,10 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(argv.from.publicKey.toString('hex'));
 
-  let serverAddress = server.address();
-  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  server.on('listening', () => {
+    let serverAddress = server.address();
+    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  });
 
   // handle graceful exit
   process.once('SIGINT', function () {
