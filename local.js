@@ -33,6 +33,9 @@ if (argv.connect === 1) throw new Error('--connect is required (name or public k
     remotePublicKey: argv.connect[0],
     localAddress: argv.L,
     keyPair: argv.from,
+    cb: () => {
+      console.log('listening');
+    }
   });
 
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');

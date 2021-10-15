@@ -69,11 +69,11 @@ function ConnectTCP (address, port) {
   return socket;
 }
 
-function Remote ({ keyPair, remoteAddress, peers }) {
+function Remote ({ keyPair, remoteAddress, peers, cb }) {
   console.log('Remote', { keyPair, remoteAddress, peers });
 
   return new Promise(resolve => {
-    const server = ListenNoise(keyPair, peers);
+    const server = ListenNoise(keyPair, peers, cb);
 
     server.on('connection', function (peer) {
       console.log(Date.now(), 'Remote connection', peer);
@@ -89,11 +89,11 @@ function Remote ({ keyPair, remoteAddress, peers }) {
   });
 }
 
-function Local ({ remotePublicKey, localAddress, keyPair }) {
+function Local ({ remotePublicKey, localAddress, keyPair, cb }) {
   console.log('Local', { remotePublicKey, localAddress, keyPair });
 
   return new Promise(resolve => {
-    const server = ListenTCP(localAddress.port, localAddress.address); // topic.on('peer'
+    const server = ListenTCP(localAddress.port, localAddress.address, cb); // topic.on('peer'
 
     // topic.on('peer', ...)
 
