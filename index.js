@@ -55,9 +55,6 @@ function ConnectNoise (publicKey, keyPair) {
   let peer = noise.connect(publicKey, keyPair);
   // + should try to directly connect based on a map of publicKey -> peer ip:port expired after 48 hours
   addNoiseLogs(peer);
-  peer.rawStream.topic.on('peer', function (peer) {
-    console.log('ConnectNoise: topic on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
-  });
   return peer;
 }
 
@@ -81,7 +78,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('remote: cb');
 
       server.topic.on('peer', function (peer) {
-        console.log('ConnectNoise: peer on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
+        console.log('Remote: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
       });
 
       err ? reject(err) : resolve(server);
@@ -117,6 +114,10 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       console.log(Date.now(), 'Local connection');
 
       let peer = ConnectNoise(remotePublicKey, keyPair);
+
+      peer.rawStream.topic.on('peer', function (peer) {
+        console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
+      });
 
       peer.on('handshake', function () {
         if (peer.destroyed || peer.connected) return peer.destroy();
