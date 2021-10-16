@@ -89,7 +89,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
     console.log('remote: server on connection');
     server.on('connection', function (peer) {
-      console.log(Date.now(), 'Remote connection', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+      console.log(Date.now(), 'Peer handshake', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
 
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       endAfterServerClose(peer, server);
@@ -117,10 +117,16 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       console.log(Date.now(), 'Local connection');
 
       let peer = ConnectNoise(remotePublicKey, keyPair);
-      endAfterServerClose(peer, server);
 
-      mimic(local, peer); // replicate local actions to -> peer
-      mimic(peer, local); // replicate peer actions to -> local
+      peer.on('handshake', function () {
+        if (peer.destroyed || peer.connected) return peer.destroy();
+
+        console.log('Peer handshake', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+
+        endAfterServerClose(peer, server);
+        mimic(local, peer); // replicate local actions to -> peer
+        mimic(peer, local); // replicate peer actions to -> local
+      });
     });
 
     // let mainPeer = ConnectNoise(remotePublicKey, keyPair);

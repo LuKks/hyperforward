@@ -8,6 +8,7 @@ module.exports = {
   onstatickey,
   maybeKeygen,
   endAfterServerClose,
+  destroyAfterServerClose,
   serverClose,
   addNoiseLogs,
   addSocketLogs
@@ -85,6 +86,12 @@ function maybeKeygen (peer) {
 
 function endAfterServerClose (socket, server) {
   let clientEnd = () => socket.end();
+  server.once('$closing', clientEnd);
+  socket.once('close', () => server.off('$closing', clientEnd));
+}
+
+function destroyAfterServerClose (socket, server) {
+  let clientEnd = () => socket.destroy();
   server.once('$closing', clientEnd);
   socket.once('close', () => server.off('$closing', clientEnd));
 }
