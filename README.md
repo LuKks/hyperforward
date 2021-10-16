@@ -84,7 +84,10 @@ hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb516
 # [lks] (dce0...e555)
 ```
 
-#### Listen remote forward (server)
+#### Forward
+Share your local server like HTTP, VNC, etc.
+
+Server (listen remote forward):
 ```bash
 # use: hyperforward --from [public_key] -R [remote_address:port] --clients [asterisk or list of names or public keys]
 
@@ -92,12 +95,29 @@ hyperforward --from lks -R 127.0.0.1:3000 --clients crst
 # --clients: only names or public keys (comma separated) are allowed to connect
 ```
 
-#### Connect local forward (client)
+Client (connect local forward):
 ```bash
 # use: hyperforward --from [public_key] -L [local_address:port] --connect [public_key]
 
 hyperforward --from crst -L 127.0.0.1:3000 --connect lks
 # --connect: only --clients specified in remote (-R) can connect
+```
+
+#### Dynamic proxy
+Share your local proxy server (http, socks4, socks5, etc) like protonsocks.
+
+Server:
+```bash
+# use: hyperforward --from [public_key] -D [bind_address:port] --clients [asterisk or list of names or public keys]
+
+hyperforward --from lks -D 127.0.0.1:1090 --clients crst
+```
+
+Client:
+```bash
+# use: hyperforward --from [public_key] -D [local_address:port] --connect [public_key]
+
+hyperforward --from crst -D 127.0.0.1:1090 --connect lks
 ```
 
 #### Print the public key
@@ -133,7 +153,7 @@ hyperforward rm crst
 # Public key is now deleted: /home/lucas/.ssh/noise_crst.pub
 ```
 
-#### Temporal server authentication
+#### Temporal server
 Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)
 ```bash
 # server:
@@ -145,16 +165,20 @@ hyperforward -R 127.0.0.1:3000 --clients crst
 hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
 ```
 
-#### Temporal client authentication
+#### Temporal client
 Don't set `--from` in `-L` (will keygen a temporal pair keys in memory)
 ```bash
-# example server listen:
-hyperforward --from lks -R 127.0.0.1:3000 --clients crst
-# Listening on:
-# dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
-
 # client:
-hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+hyperforward -L 127.0.0.1:3000 --connect lks
+# The temporal public key is:
+# e6932f4067f271063b4c998215094757d585f7d32182080af0b46e9f0feab864
+# Listening on: 127.0.0.1:3000
+
+# example server listen:
+hyperforward --from lks -R 127.0.0.1:3000 --clients e6932f4067f271063b4c998215094757d585f7d32182080af0b46e9f0feab864
+The public key is:
+dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
+Listening on: :::37153
 ```
 
 ## License
