@@ -1,4 +1,4 @@
-const noise = require('noise-network');
+const noise = require('@lukks/noise-network');
 const net = require('net');
 const fs = require('fs');
 const { parsePeers, parseAddressPort, mimic, onstatickey, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
