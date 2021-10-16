@@ -117,8 +117,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       peer.on('handshake', function () {
         if (peer.destroyed || peer.connected) return peer.destroy();
 
-        console.log('Local: peer handshake', peer);
-        console.log('Local: peer handshake', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+        console.log('Local: peer handshake', peer.rawStream._writable.remoteAddress + ':' + peer.rawStream._writable.remotePort, '(' + peer.rawStream._writable.remoteFamily + ')');
 
         endAfterServerClose(peer, server);
         mimic(local, peer); // replicate local actions to -> peer
