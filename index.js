@@ -17,7 +17,7 @@ function ListenNoise (keyPair, peers, cb) {
 
   if (!cb) cb = () => {};
 
-  const server = noise.createServer({ announceLocalAddress: true, lookup: false, validate: onstatickey(peers) });
+  const server = noise.createServer({ announceLocalAddress: false, lookup: false, validate: onstatickey(peers) });
 
   server.on('error', console.error);
   server.on('close', () => console.log('Listen closed'));
@@ -98,15 +98,12 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
   console.log('Local', { remotePublicKey, localAddress, keyPair });
 
   return new Promise((resolve, reject) => {
-    console.log('local: listen tcp');
     const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
-      console.log('local: cb');
       err ? reject(err) : resolve(server);
     });
 
     // topic.on('peer', ...)
 
-    console.log('local: server on connection');
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
@@ -116,6 +113,9 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
       peer.on('connected', function () {
         if (peer.destroyed || peer.connected) return peer.destroy();
+        setTimeout(() => {
+          console.log('peer connected?', peer.connected);
+        }, 1000);
 
         console.log('Local: peer connected', peer.rawStream._writable.remoteAddress + ':' + peer.rawStream._writable.remotePort, '(' + peer.rawStream._writable.remoteFamily + ')');
 
