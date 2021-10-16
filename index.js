@@ -90,7 +90,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       mimic(remote, peer); // replicate remote actions to -> peer
     });
 
-    server.on('peer', function (peer) {
+    server.topic.on('peer', function (peer) {
       // { port: peer.port, host: peer.host, local: true, to, referrer: null, topic }
       console.log('remote: server on peer', peer);
     });
