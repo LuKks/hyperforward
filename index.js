@@ -21,7 +21,6 @@ function ListenNoise (keyPair, peers, cb) {
 
   server.on('error', console.error);
   server.on('close', () => console.log('Listen closed'));
-  server.on('peer', ({ port, host, local, to, referrer, topic }) => console.log('peer found', { port, host, local, to, referrer, topic }));
   server.on('connection', addNoiseLogs);
 
   server.listen(keyPair, cb);
@@ -77,9 +76,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     const server = ListenNoise(keyPair, peers, function (err) {
       console.log('remote: cb');
 
-      server.topic.on('peer', function (peer) {
-        console.log('Remote: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
-      });
+      server.topic.on('peer', (peer) => console.log('Remote: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
 
       err ? reject(err) : resolve(server);
     });
@@ -115,13 +112,12 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
       let peer = ConnectNoise(remotePublicKey, keyPair);
 
-      peer.rawStream.topic.on('peer', function (peer) {
-        console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to);
-      });
+      peer.rawStream.topic.on('peer', (peer) => console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
 
       peer.on('handshake', function () {
         if (peer.destroyed || peer.connected) return peer.destroy();
 
+        console.log('Local: peer handshake', peer);
         console.log('Local: peer handshake', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
 
         endAfterServerClose(peer, server);
