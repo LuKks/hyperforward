@@ -32,22 +32,14 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
   const server = await Remote({
     keyPair: argv.from,
     remoteAddress: argv.R,
-    peers: argv.peers,
-    cb: onListening
+    peers: argv.peers
   });
 
   console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
   console.log(argv.from.publicKey.toString('hex'));
 
-  /*server.on('listening', () => {
-    let serverAddress = server.address();
-    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-  });*/
-  function onListening () {
-    console.log('onListening');
-    let serverAddress = server.address();
-    console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
-  }
+  let serverAddress = server.address();
+  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
 
   // handle graceful exit
   process.once('SIGINT', function () {
