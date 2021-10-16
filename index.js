@@ -55,9 +55,11 @@ function ConnectNoise (publicKey, keyPair) {
   let peer = noise.connect(publicKey, keyPair);
   // + should try to directly connect based on a map of publicKey -> peer ip:port expired after 48 hours
   addNoiseLogs(peer);
-  console.log(peer);
-  peer.discovery.on('peer', function (peer) {
+  peer.on('peer', function (peer) {
     console.log('ConnectNoise: peer on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', peer.referrer, 'to', ...peer.to);
+  });
+  peer.rawStream.topic.on('peer', function (peer) {
+    console.log('ConnectNoise: topic on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', peer.referrer, 'to', ...peer.to);
   });
   return peer;
 }
