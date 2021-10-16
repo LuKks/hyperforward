@@ -114,7 +114,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
       peer.rawStream.topic.on('peer', (peer) => console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
 
-      peer.on('handshake', function () {
+      peer.on('connected', function () {
         if (peer.destroyed || peer.connected) return peer.destroy();
 
         console.log('Local: peer handshake', peer.rawStream._writable.remoteAddress + ':' + peer.rawStream._writable.remotePort, '(' + peer.rawStream._writable.remoteFamily + ')');
