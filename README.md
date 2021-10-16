@@ -4,6 +4,8 @@ Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
+Do not use it! I'm currently working on it.
+
 ## Install
 ```
 npm i -g hyperforward
