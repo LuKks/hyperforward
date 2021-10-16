@@ -1,6 +1,3 @@
-const noise = require('noise-network');
-const net = require('net');
-const fs = require('fs');
 const { parsePeers, parseAddressPort, mimic, onstatickey, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs } = require('./util.js');
 const { Listen, Remote, Connect, Local } = require('./index.js');
 const argv = require('minimist')(process.argv.slice(2));
