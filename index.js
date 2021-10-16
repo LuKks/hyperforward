@@ -102,8 +102,6 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       err ? reject(err) : resolve(server);
     });
 
-    // topic.on('peer', ...)
-
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
@@ -111,12 +109,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
       peer.rawStream.topic.on('peer', (peer) => console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
 
-      peer.on('connected', function () {
-        if (peer.destroyed || peer.connected) return peer.destroy();
-        setTimeout(() => {
-          console.log('peer connected?', peer.connected);
-        }, 1000);
-
+      peer.on('handshake', function () {
         console.log('Local: peer connected', peer.rawStream._writable.remoteAddress + ':' + peer.rawStream._writable.remotePort, '(' + peer.rawStream._writable.remoteFamily + ')');
 
         endAfterServerClose(peer, server);
