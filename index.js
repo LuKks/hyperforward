@@ -55,6 +55,10 @@ function ConnectNoise (publicKey, keyPair) {
   let peer = noise.connect(publicKey, keyPair);
   // + should try to directly connect based on a map of publicKey -> peer ip:port expired after 48 hours
   addNoiseLogs(peer);
+  console.log(peer);
+  peer.discovery.on('peer', function (peer) {
+    console.log('ConnectNoise: peer on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', peer.referrer, 'to', ...peer.to);
+  });
   return peer;
 }
 
@@ -78,8 +82,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('remote: cb');
 
       server.topic.on('peer', function (peer) {
-        // { port: peer.port, host: peer.host, local: true, to, referrer: null, topic }
-        console.log('remote: server on peer', peer);
+        console.log('ConnectNoise: peer on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', peer.referrer, 'to', ...peer.to);
       });
 
       err ? reject(err) : resolve(server);
