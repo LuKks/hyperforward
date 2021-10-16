@@ -106,6 +106,8 @@ function serverClose (server, { isNoise, timeoutForceExit }) {
 }
 
 function addNoiseLogs (peer) {
+  console.log('addNoiseLogs');
+
   peer.on('error', (err) => console.log(Date.now(), 'peer error', err));
   peer.on('connect', () => console.log(Date.now(), 'peer connect'));
   peer.on('handshake', () => console.log(Date.now(), 'peer handshake'));
@@ -118,6 +120,8 @@ function addNoiseLogs (peer) {
 }
 
 function addSocketLogs (socket) {
+  console.log('addSocketLogs');
+
   socket.on('error', (err) => console.log(Date.now(), 'socket error', err));
   socket.on('timeout', () => console.log(Date.now(), 'socket timeout'));
   socket.on('end', () => console.log(Date.now(), 'socket ended'));
