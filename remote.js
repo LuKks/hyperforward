@@ -41,7 +41,7 @@ if (argv.peers === 1) throw new Error('--peers is required (name or public key, 
   // handle graceful exit
   process.once('SIGINT', function () {
     console.log(Date.now(), 'SIGINT');
-    serverClose(server, { isNoise: true, timeoutForceExit: 1000 });
+    serverClose(server, { isNoise: false, timeoutForceExit: 1000 }); // isNoise changed to false
   });
 })();
 
