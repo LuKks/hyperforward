@@ -76,6 +76,12 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     console.log('remote: listen noise');
     const server = ListenNoise(keyPair, peers, function (err) {
       console.log('remote: cb');
+
+      server.topic.on('peer', function (peer) {
+        // { port: peer.port, host: peer.host, local: true, to, referrer: null, topic }
+        console.log('remote: server on peer', peer);
+      });
+
       err ? reject(err) : resolve(server);
     });
 
@@ -88,11 +94,6 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
       mimic(peer, remote); // replicate peer actions to -> remote
       mimic(remote, peer); // replicate remote actions to -> peer
-    });
-
-    server.topic.on('peer', function (peer) {
-      // { port: peer.port, host: peer.host, local: true, to, referrer: null, topic }
-      console.log('remote: server on peer', peer);
     });
   });
 }
