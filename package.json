@@ -30,7 +30,7 @@
     "hyperswarm"
   ],
   "dependencies": {
-    "minimist": "^1.2.5",
-    "noise-network": "github:LuKks/noise-network"
+    "@lukks/noise-network": "^2.1.0",
+    "minimist": "^1.2.5"
   }
 }
