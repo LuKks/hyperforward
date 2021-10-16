@@ -76,7 +76,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     console.log('remote: listen noise');
     const server = ListenNoise(keyPair, peers, function (err) {
       console.log('remote: cb');
-      err ? reject(err) : resolve();
+      err ? reject(err) : resolve(server);
     });
 
     console.log('remote: server on connection');
@@ -99,7 +99,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     console.log('local: listen tcp');
     const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
       console.log('local: cb');
-      err ? reject(err) : resolve();
+      err ? reject(err) : resolve(server);
     });
 
     // topic.on('peer', ...)
