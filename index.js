@@ -92,7 +92,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       mimic(remote, peer); // replicate remote actions to -> peer
     });
 
-    const topic = Buffer.alloc(32).fill('hello world'); // A topic must be 32 bytes
+    const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
     const discovery = swarm1.join(topic, { server: true, client: false });
     console.log('discovery joined');
     (async () => {
@@ -119,7 +119,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         firewall: onFirewall([remotePublicKey])
       });
 
-      const topic = Buffer.alloc(32).fill('hello world'); // A topic must be 32 bytes
+      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
 
       swarm2.once('connection', (peer, info) => {
         swarm2.leave(topic);
