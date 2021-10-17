@@ -76,8 +76,8 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     console.log('remote: listen noise');
 
     const swarm1 = new Hyperswarm({
-      keyPair,
-      firewall: onFirewall(peers)
+      // keyPair,
+      // firewall: onFirewall(peers)
     });
 
     swarm1.on('connection', (peer, info) => {
@@ -115,8 +115,8 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       console.log(Date.now(), 'Local connection');
 
       const swarm2 = new Hyperswarm({
-        keyPair,
-        firewall: onFirewall([remotePublicKey])
+        // keyPair,
+        // firewall: onFirewall([remotePublicKey])
       });
 
       const topic = Buffer.alloc(32).fill('hello world'); // A topic must be 32 bytes
