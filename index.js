@@ -307,10 +307,10 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         mimic(peer, local); // replicate peer actions to -> local
       });
 
-      swarm2.joinPeer(remotePublicKey);
-      swarm2.leavePeer(remotePublicKey);
+      // swarm2.joinPeer(remotePublicKey);
+      // swarm2.leavePeer(remotePublicKey);
 
-      // swarm2.join(topic, { server: false, client: true });
+      swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
         await swarm2.flush(); // Waits for the swarm to connect to pending peers.
