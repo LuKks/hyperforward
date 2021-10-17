@@ -31,6 +31,7 @@
   ],
   "dependencies": {
     "@lukks/noise-network": "lukks/noise-network#dev",
+    "hyperswarm": "^3.0.0-rc.0",
     "minimist": "^1.2.5"
   }
 }
