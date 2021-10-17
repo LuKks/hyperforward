@@ -81,12 +81,15 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     });
 
     swarm1.on('connection', (peer, peerInfo) => {
+      addNoiseLogs(peer);
+
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       // console.log('peerInfo', peerInfo);
 
       // endAfterServerClose(peer, server);
 
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+      addSocketLogs(remote);
       mimic(peer, remote); // replicate peer actions to -> remote
       mimic(remote, peer); // replicate remote actions to -> peer
     });
@@ -157,6 +160,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     });
 
     swarm2.once('connection', (peer, peerInfo) => {
+      addNoiseLogs(peer);
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
 
       mainPeer = peer;
@@ -174,6 +178,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     })();
 
     server.on('connection', function (local) {
+      addSocketLogs(local);
       console.log(Date.now(), 'Local connection');
 
       (async () => {
