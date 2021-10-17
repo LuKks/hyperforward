@@ -1,5 +1,5 @@
 const fs = require('fs');
-const noise = require('noise-network');
+const Hyperswarm = require('hyperswarm');
 const argv = require('minimist')(process.argv.slice(2));
 const os = require('os');
 
@@ -28,14 +28,16 @@ if (fs.existsSync(homedir + '/.ssh/noise_' + name)) {
   throw new Error('The secret key already exists (' + homedir + '/.ssh/noise_' + name + ')');
 }
 
-let pairKeys = noise.keygen();
+const swarm = new Hyperswarm();
+let keyPair = swarm.keyPair;
 // + encrypt secret key with password
+swarm.destroy();
 
-let secretKey = pairKeys.secretKey.toString('hex');
+let secretKey = keyPair.secretKey.toString('hex');
 fs.writeFileSync(homedir + '/.ssh/noise_' + name, secretKey + '\n');
 console.log('Your identification has been saved in ' + homedir + '/.ssh/noise_' + name);
 
-let publicKey = pairKeys.publicKey.toString('hex');
+let publicKey = keyPair.publicKey.toString('hex');
 fs.writeFileSync(homedir + '/.ssh/noise_' + name + '.pub', publicKey + '\n');
 console.log('Your public key has been saved in ' + homedir + '/.ssh/noise_' + name + '.pub');
 
