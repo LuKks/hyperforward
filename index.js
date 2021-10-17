@@ -268,11 +268,10 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       mimic(peer, remote); // replicate peer actions to -> remote
       mimic(remote, peer); // replicate remote actions to -> peer
-
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
-    // swarm.join(topic, { server: false, client: true });
+    swarm.join(topic, { server: false, client: true });
     console.log('discovery joined');
     (async () => {
       await swarm.flush(); // Waits for the swarm to connect to pending peers.
