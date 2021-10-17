@@ -176,13 +176,15 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
-      while (!mainPeer) {
-        await sleep(10);
-      }
+      (async () => {
+        while (!mainPeer) {
+          await sleep(10);
+        }
 
-      // endAfterServerClose(peer, server);
-      mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
-      mimic(mainPeer, local); // replicate peer actions to -> local
+        // endAfterServerClose(peer, server);
+        mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
+        mimic(mainPeer, local); // replicate peer actions to -> local
+      })();
     });
   });
 }
