@@ -88,26 +88,14 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
       // endAfterServerClose(peer, server);
 
-      let remote = reconnect(peer, null);
+      let remote = connectRemote(peer, null);
       // mimic3(peer, remote); // replicate peer actions to -> remote
       // mimic2(remote, peer); // replicate remote actions to -> peer
 
-      function reconnect (peer, remote) {
+      function connectRemote (peer, remote) {
         // if already connected then off listeners
         if (remote) {
-          peer.off('error', peer.destroy);
-          peer.off('data', remote.write);
-          peer.off('end', remote.end);
-          peer.off('finish', peer.destroy);
-          peer.off('finish', remote.end);
-          peer.off('close', remote.destroy);
-
-          remote.off('error', remote.destroy);
-          remote.off('data', peer.write);
-          remote.off('end', remote/*peer*/.destroy);
-          remote.off('finish', remote.destroy);
-          // remote.off('finish', peer.end);
-          // remote.off('close', peer.destroy);
+          unmimic(peer, remote);
         }
 
         // connect for first time or reconnect
@@ -115,6 +103,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
         // mimic (peer -> remote)
         peer.on('error', peer.destroy);
+        peer.on('error', remote.destroy);
         peer.on('data', remote.write);
         peer.on('end', remote.end);
         peer.on('finish', peer.destroy);
@@ -135,13 +124,32 @@ function Remote ({ keyPair, remoteAddress, peers }) {
         return remote;
 
         function onRemoteClose () {
+          unmimic(peer, remote);
+
           if (peer.destroyed) {
             console.log('peer was destroyed, cant reconnect');
             return;
           }
 
-          reconnect(peer, remote);
+          connectRemote(peer, remote);
         }
+      }
+
+      function unmimic (peer, remote) {
+        peer.off('error', peer.destroy);
+        peer.off('error', remote.destroy);
+        peer.off('data', remote.write);
+        peer.off('end', remote.end);
+        peer.off('finish', peer.destroy);
+        peer.off('finish', remote.end);
+        peer.off('close', remote.destroy);
+
+        remote.off('error', remote.destroy);
+        remote.off('data', peer.write);
+        remote.off('end', remote/*peer*/.destroy);
+        remote.off('finish', remote.destroy);
+        // remote.off('finish', peer.end);
+        // remote.off('close', peer.destroy);
       }
     });
 
