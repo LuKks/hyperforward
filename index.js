@@ -1,7 +1,8 @@
+const Hyperswarm = require('hyperswarm');
 const noise = require('@lukks/noise-network');
 const net = require('net');
 const fs = require('fs');
-const { parsePeers, parseAddressPort, mimic, onstatickey, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
+const { parsePeers, parseAddressPort, mimic, onFirewall, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
 
 module.exports = {
   ListenNoise,
@@ -17,7 +18,7 @@ function ListenNoise (keyPair, peers, cb) {
 
   if (!cb) cb = () => {};
 
-  const server = noise.createServer({ announceLocalAddress: true, lookup: true, validate: onstatickey(peers) });
+  const server = noise.createServer({ announceLocalAddress: true, lookup: true, validate: onFirewall(peers) });
 
   server.on('error', console.error);
   server.on('close', () => console.log('Listen closed'));
@@ -73,24 +74,29 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
   return new Promise(resolve => {
     console.log('remote: listen noise');
-    const server = ListenNoise(keyPair, peers, function (err) {
-      console.log('remote: cb');
 
-      server.topic.on('peer', (peer) => console.log('Remote: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
-
-      err ? reject(err) : resolve(server);
+    const swarm1 = new Hyperswarm({
+      keyPair,
+      firewall: onFirewall(peers)
     });
 
-    console.log('remote: server on connection');
-    server.on('connection', function (peer) {
-      console.log(Date.now(), 'Peer handshake', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+    swarm1.on('connection', (peer, info) => {
+      console.log('swarm connection');
+      console.log('peer', peer);
+      console.log('info', info);
 
-      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       endAfterServerClose(peer, server);
 
+      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       mimic(peer, remote); // replicate peer actions to -> remote
       mimic(remote, peer); // replicate remote actions to -> peer
     });
+
+    const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
+    const discovery = swarm1.join(topic, { server: true, client: false });
+    console.log('discovery joined');
+    await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
+    console.log('discovery flushed');
   });
 }
 
@@ -105,20 +111,22 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
-      let peer = ConnectNoise(remotePublicKey, keyPair);
+      const swarm2 = new Hyperswarm({
+        keyPair,
+        firewall: onFirewall([remotePublicKey])
+      });
 
-      peer.rawStream.topic.on('peer', (peer) => console.log('Local: on peer', peer.host + ':' + peer.port, 'local?', peer.local, 'referrer?', !!peer.referrer, 'to', peer.to));
-
-      peer.on('handshake', function () {
-        console.log('Local: peer connected', peer.rawStream._writable.remoteAddress + ':' + peer.rawStream._writable.remotePort, '(' + peer.rawStream._writable.remoteFamily + ')');
-
+      swarm2.on('connection', (peer, info) => {
         endAfterServerClose(peer, server);
         mimic(local, peer); // replicate local actions to -> peer
         mimic(peer, local); // replicate peer actions to -> local
       });
-    });
 
-    // let mainPeer = ConnectNoise(remotePublicKey, keyPair);
-    // endAfterServerClose(mainPeer, server);
+      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
+      swarm2.join(topic, { server: false, client: true });
+      console.log('discovery joined');
+      await swarm2.flush() // Waits for the swarm to connect to pending peers.
+      console.log('discovery flush');
+    });
   });
 }

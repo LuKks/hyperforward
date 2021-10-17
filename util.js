@@ -5,7 +5,7 @@ module.exports = {
   parsePeers,
   parseAddressPort,
   mimic,
-  onstatickey,
+  onFirewall,
   maybeKeygen,
   endAfterServerClose,
   destroyAfterServerClose,
@@ -57,20 +57,20 @@ function mimic (src, dst, opts) {
   !reuse && src.on('close', () => dst.destroy());
 }
 
-function onstatickey (clientPublicKeys) {
-  return function (remoteKey, done) {
+function onFirewall (clientPublicKeys) {
+  return function (remotePublicKey, remoteHandshakePayload) {
     for (let i = 0; i < clientPublicKeys.length; i++) {
       let publicKey = clientPublicKeys[i];
       if (publicKey === '*') {
-        return done();
+        return true;
       }
-      if (remoteKey.equals(publicKey)) {
-        console.log(Date.now(), 'onstatickey, allowed public key:\n' + remoteKey.toString('hex'));
-        return done();
+      if (remotePublicKey.equals(publicKey)) {
+        console.log(Date.now(), 'onFirewall, allowed public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload);
+        return true;
       }
     }
-    console.log(Date.now(), 'onstatickey, denied public key:\n' + remoteKey.toString('hex'));
-    return done(new Error('Unauthorized key'));
+    console.log(Date.now(), 'onFirewall, denied public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload);
+    return false;
   };
 }
 
