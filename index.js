@@ -134,8 +134,8 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
-        // await swarm2.flush(); // Waits for the swarm to connect to pending peers.
-        // console.log('discovery flush');
+        await swarm2.flush(); // Waits for the swarm to connect to pending peers.
+        console.log('discovery flush');
       })();
     });
   });
