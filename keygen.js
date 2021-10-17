@@ -31,7 +31,6 @@ if (fs.existsSync(homedir + '/.ssh/noise_' + name)) {
 const swarm = new Hyperswarm();
 let keyPair = swarm.keyPair;
 // + encrypt secret key with password
-swarm.destroy();
 
 let secretKey = keyPair.secretKey.toString('hex');
 fs.writeFileSync(homedir + '/.ssh/noise_' + name, secretKey + '\n');
@@ -43,3 +42,10 @@ console.log('Your public key has been saved in ' + homedir + '/.ssh/noise_' + na
 
 console.log('The public key is:');
 console.log(publicKey);
+
+(async () => {
+  console.log('swarm clear');
+  await swarm.clear();
+  console.log('swarm destroy');
+  await swarm.destroy();
+})();
