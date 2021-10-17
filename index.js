@@ -96,14 +96,14 @@ function Remote ({ keyPair, remoteAddress, peers }) {
         // if already connected then off listeners
         if (remote) {
           peer.off('error', peer.destroy);
-          peer.unpipe(remote);
+          peer.off('data', remote.write);
           peer.off('end', remote.end);
           peer.off('finish', peer.destroy);
           peer.off('finish', remote.end);
           peer.off('close', remote.destroy);
 
           remote.off('error', remote.destroy);
-          remote.unpipe(peer);
+          remote.off('data', peer.write);
           remote.off('end', remote/*peer*/.destroy);
           remote.off('finish', remote.destroy);
           // remote.off('finish', peer.end);
@@ -115,7 +115,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
         // mimic (peer -> remote)
         peer.on('error', peer.destroy);
-        peer.pipe(remote, { end: false });
+        peer.on('data', remote.write);
         peer.on('end', remote.end);
         peer.on('finish', peer.destroy);
         peer.on('finish', remote.end);
@@ -123,7 +123,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
         // mimic but reuse peer (remote -> peer)
         remote.on('error', remote.destroy);
-        remote.pipe(peer, { end: false });
+        remote.on('data', peer.write);
         remote.on('end', remote/*peer*/.destroy);
         remote.on('finish', remote.destroy);
         // remote.on('finish', peer.end);
