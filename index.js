@@ -119,6 +119,8 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       });
 
       swarm2.on('connection', (peer, info) => {
+        console.log('swarm2 connection');
+
         endAfterServerClose(peer, server);
         mimic(local, peer); // replicate local actions to -> peer
         mimic(peer, local); // replicate peer actions to -> local
