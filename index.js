@@ -89,7 +89,6 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       // endAfterServerClose(peer, server);
 
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-      addSocketLogs(remote);
       mimic(peer, remote); // replicate peer actions to -> remote
       mimic2(remote, peer); // replicate remote actions to -> peer
     });
@@ -178,7 +177,6 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
     })();
 
     server.on('connection', function (local) {
-      addSocketLogs(local);
       console.log(Date.now(), 'Local connection');
 
       (async () => {
