@@ -287,15 +287,13 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       err ? reject(err) : resolve(server);
     });
 
-    const swarm2 = new Hyperswarm({
-      keyPair,
-      firewall: onFirewall([remotePublicKey])
-    });
-
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
-      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
+      const swarm2 = new Hyperswarm({
+        keyPair,
+        firewall: onFirewall([remotePublicKey])
+      });
 
       swarm2.once('connection', (peer, peerInfo) => {
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
@@ -310,6 +308,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       // swarm2.joinPeer(remotePublicKey);
       // swarm2.leavePeer(remotePublicKey);
 
+      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
       swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
