@@ -2,7 +2,7 @@ const Hyperswarm = require('hyperswarm');
 const noise = require('@lukks/noise-network');
 const net = require('net');
 const fs = require('fs');
-const { parsePeers, parseAddressPort, mimic, mimic2, onFirewall, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
+const { parsePeers, parseAddressPort, mimic, mimic2, mimic3, onFirewall, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
 
 module.exports = {
   ListenNoise,
@@ -88,9 +88,61 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
       // endAfterServerClose(peer, server);
 
-      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-      mimic(peer, remote); // replicate peer actions to -> remote
-      mimic2(remote, peer); // replicate remote actions to -> peer
+      let remote = reconnect(peer, null);
+      // mimic3(peer, remote); // replicate peer actions to -> remote
+      // mimic2(remote, peer); // replicate remote actions to -> peer
+
+      function reconnect (peer, remote) {
+        // if already connected then off listeners
+        if (remote) {
+          peer.off('error', peer.destroy);
+          peer.unpipe(remote);
+          peer.off('end', remote.end);
+          peer.off('finish', peer.destroy);
+          peer.off('finish', remote.end);
+          peer.off('close', remote.destroy);
+
+          remote.off('error', remote.destroy);
+          remote.unpipe(peer);
+          remote.off('end', remote/*peer*/.destroy);
+          remote.off('finish', remote.destroy);
+          // remote.off('finish', peer.end);
+          // remote.off('close', peer.destroy);
+        }
+
+        // connect for first time or reconnect
+        remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+
+        // mimic (peer -> remote)
+        peer.on('error', peer.destroy);
+        peer.pipe(remote, { end: false });
+        peer.on('end', remote.end);
+        peer.on('finish', peer.destroy);
+        peer.on('finish', remote.end);
+        peer.on('close', remote.destroy);
+
+        // mimic but reuse peer (remote -> peer)
+        remote.on('error', remote.destroy);
+        remote.pipe(peer, { end: false });
+        remote.on('end', remote/*peer*/.destroy);
+        remote.on('finish', remote.destroy);
+        // remote.on('finish', peer.end);
+        // remote.on('close', peer.destroy);
+
+        // allow reconnect in case remote is closed
+        remote.once('close', onRemoteClose);
+
+        return remote;
+
+        function onRemoteClose () {
+          if (peer.destroyed) {
+            console.log('peer was destroyed, cant reconnect');
+            return;
+          }
+
+          reconnect(peer, remote);
+        }
+      }
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
