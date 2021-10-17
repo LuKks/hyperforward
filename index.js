@@ -258,8 +258,9 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     });
 
     swarm1.on('connection', (peer, peerInfo) => {
+      addNoiseLogs(peer);
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-      // console.log('peerInfo', peerInfo);
+      console.log('peerInfo', peerInfo);
 
       // endAfterServerClose(peer, server);
 
@@ -296,7 +297,9 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       });
 
       swarm2.once('connection', (peer, peerInfo) => {
+        addNoiseLogs(peer);
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+        console.log('peerInfo', peerInfo);
 
         console.log('swarm2 connection');
 
