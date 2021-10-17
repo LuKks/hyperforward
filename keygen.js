@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Hyperswarm = require('hyperswarm');
+const DHT = require('@hyperswarm/dht');
 const argv = require('minimist')(process.argv.slice(2));
 const os = require('os');
 
@@ -28,12 +28,7 @@ if (fs.existsSync(homedir + '/.ssh/noise_' + name)) {
   throw new Error('The secret key already exists (' + homedir + '/.ssh/noise_' + name + ')');
 }
 
-const swarm = new Hyperswarm({
-  bootstrap: []
-});
-await node.ready();
-
-let keyPair = swarm.keyPair;
+const keyPair = DHT.keyPair();
 // + encrypt secret key with password
 
 let secretKey = keyPair.secretKey.toString('hex');
@@ -46,10 +41,3 @@ console.log('Your public key has been saved in ' + homedir + '/.ssh/noise_' + na
 
 console.log('The public key is:');
 console.log(publicKey);
-
-(async () => {
-  console.log('swarm clear');
-  await swarm.clear();
-  console.log('swarm destroy');
-  await swarm.destroy();
-})();
