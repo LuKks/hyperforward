@@ -60,7 +60,7 @@ function mimic (src, dst) {
 function mimic2 (src, dst, opts) {
   src.on('error', src.destroy);
   src.on('data', (chunk) => dst.write(chunk));
-  src.on('end', () => dst.end());
+  src.on('end', () => src.end());
   src.on('finish', () => {
     src.destroy();
     // may have already ended
