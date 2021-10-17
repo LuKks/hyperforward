@@ -85,7 +85,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('peer', peer);
       console.log('info', info);
 
-      endAfterServerClose(peer, server);
+      // endAfterServerClose(peer, server);
 
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       mimic(peer, remote); // replicate peer actions to -> remote
@@ -126,7 +126,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
         console.log('swarm2 connection');
 
-        endAfterServerClose(peer, server);
+        // endAfterServerClose(peer, server);
         mimic(local, peer); // replicate local actions to -> peer
         mimic(peer, local); // replicate peer actions to -> local
       });
