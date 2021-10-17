@@ -91,7 +91,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       addSocketLogs(remote);
       mimic(peer, remote); // replicate peer actions to -> remote
-      mimic(remote, peer); // replicate remote actions to -> peer
+      mimic2(remote, peer); // replicate remote actions to -> peer
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
