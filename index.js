@@ -99,6 +99,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
       console.log('discovery flushed');
     })();
+    resolve();
   });
 }
 
@@ -118,7 +119,11 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         firewall: onFirewall([remotePublicKey])
       });
 
-      swarm2.on('connection', (peer, info) => {
+      const topic = Buffer.alloc(32).fill('hello world'); // A topic must be 32 bytes
+
+      swarm2.once('connection', (peer, info) => {
+        swarm2.leave(topic);
+
         console.log('swarm2 connection');
 
         endAfterServerClose(peer, server);
@@ -126,12 +131,11 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         mimic(peer, local); // replicate peer actions to -> local
       });
 
-      const topic = Buffer.alloc(32).fill('hello world'); // A topic must be 32 bytes
       swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
-        await swarm2.flush(); // Waits for the swarm to connect to pending peers.
-        console.log('discovery flush');
+        // await swarm2.flush(); // Waits for the swarm to connect to pending peers.
+        // console.log('discovery flush');
       })();
     });
   });
