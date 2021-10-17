@@ -28,7 +28,11 @@ if (fs.existsSync(homedir + '/.ssh/noise_' + name)) {
   throw new Error('The secret key already exists (' + homedir + '/.ssh/noise_' + name + ')');
 }
 
-const swarm = new Hyperswarm();
+const swarm = new Hyperswarm({
+  bootstrap: []
+});
+await node.ready();
+
 let keyPair = swarm.keyPair;
 // + encrypt secret key with password
 
