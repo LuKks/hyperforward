@@ -259,9 +259,8 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       addNoiseLogs(peer);
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       // console.log('peerInfo', peerInfo);
-
-      console.log('My public key', peer.publicKey);
-      console.log('Peer public key', peer.remotePublicKey);
+      // console.log('My public key', peer.publicKey);
+      // console.log('Peer public key', peer.remotePublicKey);
 
       // endAfterServerClose(peer, server);
 
@@ -271,7 +270,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
-    swarm.join(topic, { server: false, client: true });
+    swarm.join(topic, { server: true, client: false });
     console.log('discovery joined');
     (async () => {
       await swarm.flush(); // Waits for the swarm to connect to pending peers.
