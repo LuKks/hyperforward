@@ -76,7 +76,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     console.log('remote: listen noise');
 
     const swarm1 = new Hyperswarm({
-      // keyPair,
+      keyPair,
       // firewall: onFirewall(peers)
     });
 
