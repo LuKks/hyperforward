@@ -263,9 +263,9 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
       // endAfterServerClose(peer, server);
 
-      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-      mimic(peer, remote); // replicate peer actions to -> remote
-      mimic(remote, peer); // replicate remote actions to -> peer
+      // let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+      // mimic(peer, remote); // replicate peer actions to -> remote
+      // mimic(remote, peer); // replicate remote actions to -> peer
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
@@ -301,8 +301,8 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         console.log('swarm2 connection');
 
         // endAfterServerClose(peer, server);
-        mimic(local, peer); // replicate local actions to -> peer
-        mimic(peer, local); // replicate peer actions to -> local
+        // mimic(local, peer); // replicate local actions to -> peer
+        // mimic(peer, local); // replicate peer actions to -> local
       });
 
       // swarm2.joinPeer(remotePublicKey);
