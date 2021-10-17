@@ -99,7 +99,7 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
       console.log('discovery flushed');
     })();
-    resolve();
+    // resolve();
   });
 }
 
