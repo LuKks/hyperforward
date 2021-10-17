@@ -302,8 +302,8 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
 
         // endAfterServerClose(peer, server);
-        mimic2(local, mainPeer); // mimic2, replicate local actions to -> peer
-        mimic(mainPeer, local); // replicate peer actions to -> local
+        mimic2(local, peer); // mimic2, replicate local actions to -> peer
+        mimic(peer, local); // replicate peer actions to -> local
       });
 
       swarm.joinPeer(remotePublicKey);
