@@ -80,10 +80,9 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       firewall: onFirewall(peers)
     });
 
-    swarm1.on('connection', (peer, info) => {
-      console.log('swarm connection');
+    swarm1.on('connection', (peer, peerInfo) => {
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-      // console.log('info', info);
+      // console.log('peerInfo', peerInfo);
 
       // endAfterServerClose(peer, server);
 
@@ -111,18 +110,18 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       err ? reject(err) : resolve(server);
     });
 
+    const swarm2 = new Hyperswarm({
+      keyPair,
+      firewall: onFirewall([remotePublicKey])
+    });
+
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
 
-      const swarm2 = new Hyperswarm({
-        keyPair,
-        firewall: onFirewall([remotePublicKey])
-      });
-
       const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
 
-      swarm2.once('connection', (peer, info) => {
-        swarm2.leave(topic);
+      swarm2.once('connection', (peer, peerInfo) => {
+        console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
 
         console.log('swarm2 connection');
 
@@ -131,7 +130,10 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         mimic(peer, local); // replicate peer actions to -> local
       });
 
-      swarm2.join(topic, { server: false, client: true });
+      swarm2.joinPeer(remotePublicKey);
+      swarm2.leavePeer(remotePublicKey);
+
+      // swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
         await swarm2.flush(); // Waits for the swarm to connect to pending peers.
