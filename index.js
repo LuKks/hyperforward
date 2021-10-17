@@ -82,8 +82,8 @@ function Remote ({ keyPair, remoteAddress, peers }) {
 
     swarm1.on('connection', (peer, info) => {
       console.log('swarm connection');
-      console.log('peer', peer);
-      console.log('info', info);
+      console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+      // console.log('info', info);
 
       // endAfterServerClose(peer, server);
 
