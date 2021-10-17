@@ -102,23 +102,21 @@ function Remote ({ keyPair, remoteAddress, peers }) {
   });
 }
 
-function Local ({ remotePublicKey, localAddress, keyPair }) {
+/*function Local ({ remotePublicKey, localAddress, keyPair }) {
   console.log('Local', { remotePublicKey, localAddress, keyPair });
 
   return new Promise((resolve, reject) => {
-    const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
-      err ? reject(err) : resolve(server);
-    });
-
     const swarm2 = new Hyperswarm({
       keyPair,
       firewall: onFirewall([remotePublicKey])
     });
 
+    const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
+      err ? reject(err) : resolve(server);
+    });
+
     server.on('connection', function (local) {
       console.log(Date.now(), 'Local connection');
-
-      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
 
       swarm2.once('connection', (peer, peerInfo) => {
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
@@ -133,6 +131,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       swarm2.joinPeer(remotePublicKey);
       swarm2.leavePeer(remotePublicKey);
 
+      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
       // swarm2.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
@@ -141,4 +140,53 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       })();
     });
   });
+}*/
+
+function Local ({ remotePublicKey, localAddress, keyPair }) {
+  console.log('Local', { remotePublicKey, localAddress, keyPair });
+
+  return new Promise((resolve, reject) => {
+    const swarm2 = new Hyperswarm({
+      keyPair,
+      firewall: onFirewall([remotePublicKey])
+    });
+    let mainPeer;
+
+    const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
+      err ? reject(err) : resolve(server);
+    });
+
+    swarm2.once('connection', (peer, peerInfo) => {
+      console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+
+      mainPeer = peer;
+    });
+
+    swarm2.joinPeer(remotePublicKey);
+    swarm2.leavePeer(remotePublicKey);
+
+    const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
+    // swarm2.join(topic, { server: false, client: true });
+    console.log('discovery joined');
+    (async () => {
+      await swarm2.flush(); // Waits for the swarm to connect to pending peers.
+      console.log('discovery flush');
+    })();
+
+    server.on('connection', function (local) {
+      console.log(Date.now(), 'Local connection');
+
+      while (!mainPeer) {
+        await sleep(10);
+      }
+
+      // endAfterServerClose(peer, server);
+      mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
+      mimic(mainPeer, local); // replicate peer actions to -> local
+    });
+  });
+}
+
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
