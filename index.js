@@ -270,10 +270,10 @@ function Remote ({ keyPair, remoteAddress, peers }) {
     });
 
     const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
-    swarm.join(topic, { server: true, client: false });
+    const discovery = swarm.join(topic, { server: true, client: false });
     console.log('discovery joined');
     (async () => {
-      await swarm.flush(); // Waits for the swarm to connect to pending peers.
+      await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
       console.log('discovery flush');
     })();
   });
@@ -306,9 +306,6 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
 
       swarm.joinPeer(remotePublicKey);
       swarm.leavePeer(remotePublicKey);
-
-      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
-      // swarm.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
         await swarm.flush(); // Waits for the swarm to connect to pending peers.
