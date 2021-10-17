@@ -2,7 +2,7 @@ const Hyperswarm = require('hyperswarm');
 const noise = require('@lukks/noise-network');
 const net = require('net');
 const fs = require('fs');
-const { parsePeers, parseAddressPort, mimic, onFirewall, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
+const { parsePeers, parseAddressPort, mimic, mimic2, onFirewall, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs, addSocketLogs } = require('./util.js');
 
 module.exports = {
   ListenNoise,
@@ -182,7 +182,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         }
 
         // endAfterServerClose(peer, server);
-        mimic(local, mainPeer, { reuse: true }); // replicate local actions to -> peer
+        mimic2(local, mainPeer); // replicate local actions to -> peer
         mimic(mainPeer, local); // replicate peer actions to -> local
       })();
     });

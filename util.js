@@ -5,6 +5,7 @@ module.exports = {
   parsePeers,
   parseAddressPort,
   mimic,
+  mimic2,
   onFirewall,
   maybeKeygen,
   endAfterServerClose,
@@ -44,17 +45,28 @@ function parseAddressPort (hostname) {
   return { address, port };
 }
 
-function mimic (src, dst, opts) {
-  let { reuse } = opts || {};
-  src.on('error', reuse ? src.destroy : dst.destroy);
+function mimic (src, dst) {
+  src.on('error', dst.destroy);
   src.on('data', (chunk) => dst.write(chunk));
-  src.on('end', () => reuse ? src.destroy() : dst.end());
+  src.on('end', () => dst.end());
   src.on('finish', () => {
     src.destroy();
     // may have already ended
-    !reuse && dst.end();
+    dst.end();
   });
-  !reuse && src.on('close', () => dst.destroy());
+  src.on('close', () => dst.destroy());
+}
+
+function mimic2 (src, dst, opts) {
+  src.on('error', src.destroy);
+  src.on('data', (chunk) => dst.write(chunk));
+  src.on('end', () => dst.end());
+  src.on('finish', () => {
+    src.destroy();
+    // may have already ended
+    // dst.end();
+  });
+  // src.on('close', () => dst.destroy());
 }
 
 function onFirewall (clientPublicKeys) {
