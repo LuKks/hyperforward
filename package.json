@@ -32,7 +32,11 @@
   "dependencies": {
     "@hyperswarm/dht": "^5.0.0-rc.12",
     "@lukks/noise-network": "lukks/noise-network#dev",
+    "debug": "^4.3.2",
+    "express": "^4.17.1",
     "hyperswarm": "^3.0.0-rc.0",
-    "minimist": "^1.2.5"
+    "minimist": "^1.2.5",
+    "node-fetch": "^2.6.5",
+    "pump": "^3.0.0"
   }
 }

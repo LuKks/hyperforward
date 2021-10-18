@@ -12,8 +12,8 @@ module.exports = {
   endAfterServerClose,
   destroyAfterServerClose,
   serverClose,
-  addNoiseLogs,
-  addSocketLogs
+  addSocketLogs,
+  sleep
 };
 
 function parsePeers (peers) {
@@ -105,11 +105,11 @@ function onFirewall (clientPublicKeys) {
         return false;
       }
       if (remotePublicKey.equals(publicKey)) {
-        console.log(Date.now(), 'onFirewall, allowed public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload);
+        console.log('onFirewall, allowed public key:\n' + remotePublicKey.toString('hex')/*, remoteHandshakePayload*/);
         return false;
       }
     }
-    console.log(Date.now(), 'onFirewall, denied public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload);
+    // console.log('onFirewall, denied public key:\n' + remotePublicKey.toString('hex')/*, remoteHandshakePayload*/);
     return true;
   };
 }
@@ -152,27 +152,16 @@ function serverClose (server, { isNoise, timeoutForceExit }) {
   // + should get all sockets and end them instead of custom event
 }
 
-function addNoiseLogs (peer) {
-  console.log('addNoiseLogs');
-
-  peer.on('error', (err) => console.log(Date.now(), 'peer error', err));
-  peer.on('connect', () => console.log(Date.now(), 'peer connect'));
-  peer.on('handshake', () => console.log(Date.now(), 'peer handshake'));
-  peer.on('connected', () => console.log(Date.now(), 'peer connected'));
-  peer.on('timeout', () => console.log(Date.now(), 'peer timeout'));
-  peer.on('end', () => console.log(Date.now(), 'peer ended'));
-  // peer.on('drain', () => console.log(Date.now(), 'peer drained'));
-  peer.on('finish', () => console.log(Date.now(), 'peer finished'));
-  peer.on('close', () => console.log(Date.now(), 'peer closed'));
+// addSocketLogs('peer', socket, ['error', 'finish', 'close', ...]);
+function addSocketLogs (name, socket, events) {
+  // console.log('addSocketLogs', name);
+  for (let event of events) {
+    socket.on(event, function () {
+      console.log(name + '.on("' + event + '", ...)', ...arguments);
+    });
+  }
 }
 
-function addSocketLogs (socket) {
-  console.log('addSocketLogs');
-
-  socket.on('error', (err) => console.log(Date.now(), 'socket error', err));
-  socket.on('timeout', () => console.log(Date.now(), 'socket timeout'));
-  socket.on('end', () => console.log(Date.now(), 'socket ended'));
-  // socket.on('drain', () => console.log(Date.now(), 'socket drained'));
-  socket.on('finish', () => console.log(Date.now(), 'socket finished'));
-  socket.on('close', () => console.log(Date.now(), 'socket closed'));
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -262,14 +262,12 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       console.log('peerInfo', peerInfo);
 
-      // endAfterServerClose(peer, server);
-
       // let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
       // mimic(peer, remote); // replicate peer actions to -> remote
       // mimic(remote, peer); // replicate remote actions to -> peer
     });
 
-    const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
+    const topic = Buffer.alloc(32).fill('hyperswarm-forward-2');
     const discovery = swarm1.join(topic, { server: true, client: false });
     console.log('discovery joined');
     (async () => {
@@ -284,41 +282,43 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
   console.log('Local', { remotePublicKey, localAddress, keyPair });
 
   return new Promise((resolve, reject) => {
-    const server = ListenTCP(localAddress.port, localAddress.address, function (err) {
-      err ? reject(err) : resolve(server);
+    // + should support udp connect with --udp
+    const tcp = net.createServer();
+    tcp.on('close', () => console.log('tcp server closed'));
+    tcp.on('connection', onConnection);
+    tcp.listen(port || 0, address, function (err) {
+      err ? reject(err) : resolve(tcp);
     });
 
-    server.on('connection', function (local) {
-      console.log(Date.now(), 'Local connection');
+    function onConnection (local) {
+      addSocketLogs(local);
+      console.log('local connection');
 
-      const swarm2 = new Hyperswarm({
+      const swarm = new Hyperswarm({
         keyPair,
         firewall: onFirewall([remotePublicKey])
       });
 
-      swarm2.once('connection', (peer, peerInfo) => {
+      swarm.once('connection', (peer, peerInfo) => {
         addNoiseLogs(peer);
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
         console.log('peerInfo', peerInfo);
 
-        console.log('swarm2 connection');
-
-        // endAfterServerClose(peer, server);
-        // mimic(local, peer); // replicate local actions to -> peer
-        // mimic(peer, local); // replicate peer actions to -> local
+        // mimic(local, peer);
+        // mimic(peer, local);
       });
 
-      // swarm2.joinPeer(remotePublicKey);
-      // swarm2.leavePeer(remotePublicKey);
+      // swarm.joinPeer(remotePublicKey);
+      // swarm.leavePeer(remotePublicKey);
 
-      const topic = Buffer.alloc(32).fill('hyperforward'); // A topic must be 32 bytes
-      swarm2.join(topic, { server: false, client: true });
+      const topic = Buffer.alloc(32).fill('hyperswarm-forward-2');
+      swarm.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
-        await swarm2.flush(); // Waits for the swarm to connect to pending peers.
+        await swarm.flush(); // Waits for the swarm to connect to pending peers.
         console.log('discovery flush');
       })();
-    });
+    }
   });
 }
 
