@@ -52,7 +52,7 @@ async function startServer ({ remoteForward }) {
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
     // debug('peerInfo', peerInfo);
 
-    addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+    addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
     addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);

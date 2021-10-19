@@ -36,13 +36,13 @@ async function startClient ({ localForward }) {
   async function onConnection (local) {
     console.log('----------');
     debug('local connection');
-    addSocketLogs('local', local, ['error', 'timeout', 'end', 'finish', 'close']);
+    addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
 
     if (mainPeer) {
       const dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
-        bootstrap: mainPeer ? [] : undefined,
+        bootstrap: mainPeer ? [mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort] : undefined,
         // socket: udpSocket,
         nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }] : undefined,
         // Optionally pass a port you prefer to bind to instead of a random one
@@ -64,7 +64,7 @@ async function startClient ({ localForward }) {
         peer.removeListener('error', noop);
 
         debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-        addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+        addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
         if (!mainPeer) {
           mainPeer = peer;
         }
@@ -86,7 +86,7 @@ async function startClient ({ localForward }) {
 
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       // debug('peerInfo', peerInfo);
-      addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+      addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       if (!mainPeer) {
         mainPeer = peer;
       }
