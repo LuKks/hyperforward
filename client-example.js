@@ -117,15 +117,17 @@ async function startClient ({ localForward }) {
     debug('swarm', swarm);
 
     debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
-    debug('dht.listening[0]', swarm.dht.listening.get(0));
+    debug('dht.listening[0]', swarm.dht.listening[0]);
     debug('dht.bootstrapNodes', swarm.dht.bootstrapNodes);
     debug('dht._router', swarm.dht._router);
     debug('dht._sockets', swarm.dht._sockets);
     debug('dht.io', swarm.dht.io);
 
+    console.log('-----------');
+
     debug('server', swarm.server);
     debug('server.dht._nat', swarm.server.dht._nat.host, swarm.server.dht._nat.port);
-    debug('server.dht.listening[0]', swarm.server.dht.listening.get(0));
+    debug('server.dht.listening[0]', swarm.server.dht.listening[0]);
     debug('server.dht.bootstrapNodes', swarm.server.dht.bootstrapNodes);
     debug('server.dht._router', swarm.server.dht._router);
     debug('server.dht._sockets', swarm.server.dht._sockets);
