@@ -17,8 +17,8 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
   await startRemote();
 
   /*const node = new DHT({ bootstrap: [] });
-  node.on('bootstrap', () => console.log('node bootstrap'));
-  node.on('listening', () => console.log('node listening', node.host, node.port, node.firewalled));*/
+  node.on('bootstrap', () => debug('node bootstrap'));
+  node.on('listening', () => debug('node listening', node.host, node.port, node.firewalled));*/
 
   const remoteForward = { address: '127.0.0.1', port: '3000' };
   await startServer({ remoteForward });
@@ -28,7 +28,7 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
 function startRemote () {
   return new Promise(resolve => {
     const app = require('express')();
-    app.use((req, res, next) => console.log('req incoming') & next());
+    app.use((req, res, next) => debug('req incoming') & next());
     app.get('/', (req, res) => res.send('Hello World! ' + Math.random()));
     app.listen(3000, '127.0.0.1', resolve);
   });
@@ -39,6 +39,12 @@ async function startServer ({ remoteForward }) {
   const swarm = new Hyperswarm({
     keyPair: serverKeyPair,
     firewall: onFirewall([clientKeyPair.publicKey])
+  });
+
+  swarm.dht.on('listening', () => {
+    debug('swarm dht listening');
+    debug('remoteServerAddress', swarm.dht._sockets.remoteServerAddress());
+    debug('localServerAddress', swarm.dht._sockets.localServerAddress());
   });
 
   swarm.on('connection', (peer, peerInfo) => {
@@ -61,6 +67,4 @@ async function startServer ({ remoteForward }) {
   debug('discovery joined');
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
-
-  debug(swarm.dht);
 }

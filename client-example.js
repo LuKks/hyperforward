@@ -38,10 +38,47 @@ async function startClient ({ localForward }) {
     debug('local connection');
     addSocketLogs('local', local, ['error', 'timeout', 'end', 'finish', 'close']);
 
+    if (mainPeer) {
+      const dht = new DHT({
+        // ephemeral: false,
+        // adaptive: true,
+        bootstrap: mainPeer ? [] : undefined,
+        // socket: udpSocket,
+        nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }] : undefined,
+        // Optionally pass a port you prefer to bind to instead of a random one
+        // bind: 0,
+      });
+      dht.on('listening', () => {
+        debug('dht listening');
+        debug('remoteServerAddress', dht._sockets.remoteServerAddress());
+        debug('localServerAddress', dht._sockets.localServerAddress());
+      });
+      await sleep(300);
+      debug(dht._sockets.localServerAddress());
+
+      let peer = dht.connect(serverKeyPair.publicKey, {
+        keyPair: clientKeyPair
+      });
+      peer.on('error', noop);
+      peer.on('open', () => {
+        peer.removeListener('error', noop);
+
+        debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+        addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+        if (!mainPeer) {
+          mainPeer = peer;
+        }
+        pump(peer, local, peer);        
+      });
+      function noop () {}
+
+      return;
+    }
+
     const swarm = new Hyperswarm({
       keyPair: clientKeyPair,
       firewall: onFirewall([serverKeyPair.publicKey]),
-      bootstrap: mainPeer ? [mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort] : undefined
+      bootstrap: mainPeer ? [dht._sockets.localServerAddress().host + ':' + dht._sockets.localServerAddress().port] : undefined
     });
 
     swarm.once('connection', (peer, peerInfo) => {
@@ -49,13 +86,10 @@ async function startClient ({ localForward }) {
 
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       // debug('peerInfo', peerInfo);
-
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
-
       if (!mainPeer) {
         mainPeer = peer;
       }
-
       pump(peer, local, peer);
       // mimic(local, peer);
       // mimic(peer, local);
