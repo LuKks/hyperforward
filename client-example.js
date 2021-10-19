@@ -114,7 +114,7 @@ async function startClient ({ localForward }) {
     debug('discovery joined');
     await swarm.flush(); // Waits for the swarm to connect to pending peers.
     debug('discovery flush');
-    debug('relayAddresses', swarm.server.relayAddresses);
+    debug('swarm', swarm);
   }
 }
 

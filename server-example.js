@@ -68,5 +68,5 @@ async function startServer ({ remoteForward }) {
   debug('discovery joined');
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
-  debug('relayAddresses', swarm.server.relayAddresses);
+  debug('swarm', swarm);
 }
