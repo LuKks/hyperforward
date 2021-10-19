@@ -59,7 +59,8 @@ async function startClient ({ localForward }) {
       debug(dht._sockets.localServerAddress());
 
       let peer = dht.connect(serverKeyPair.publicKey, {
-        keyPair: clientKeyPair
+        keyPair: clientKeyPair,
+        relay
       });
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
@@ -85,6 +86,8 @@ async function startClient ({ localForward }) {
     });
 
     swarm.on('connection', (peer, peerInfo) => {
+      debug('relayAddresses', swarm.server.relayAddresses);
+
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
       debug('peerInfo', peerInfo);
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
@@ -110,6 +113,7 @@ async function startClient ({ localForward }) {
     debug('discovery joined');
     await swarm.flush(); // Waits for the swarm to connect to pending peers.
     debug('discovery flush');
+    debug('relayAddresses', swarm.server.relayAddresses);
   }
 }
 

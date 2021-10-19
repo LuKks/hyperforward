@@ -45,6 +45,7 @@ async function startServer ({ remoteForward }) {
     debug('swarm dht listening');
     debug('remoteServerAddress', swarm.dht._sockets.remoteServerAddress());
     debug('localServerAddress', swarm.dht._sockets.localServerAddress());
+    debug('relayAddresses', swarm.server.relayAddresses);
   });
 
   swarm.on('connection', (peer, peerInfo) => {
@@ -67,4 +68,5 @@ async function startServer ({ remoteForward }) {
   debug('discovery joined');
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
+  debug('relayAddresses', swarm.server.relayAddresses);
 }
