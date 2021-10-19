@@ -60,7 +60,7 @@ async function startClient ({ localForward }) {
 
       let peer = dht.connect(serverKeyPair.publicKey, {
         keyPair: clientKeyPair,
-        // relayAddresses: []
+        // relayAddresses: [{ host: '', port: '' }]
       });
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
@@ -75,8 +75,6 @@ async function startClient ({ localForward }) {
         pump(peer, local, peer);        
       });
       function noop () {}
-
-      return;
     }
 
     const swarm = new Hyperswarm({
