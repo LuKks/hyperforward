@@ -93,10 +93,10 @@ async function startClient ({ localForward }) {
 
       if (mainPeer) {
         swarm.leave(topic);
-        useMain = true;
         pump(peer, local, peer);
       } else {
         mainPeer = peer;
+        useMain = true;
         // keep it open
       }
 
