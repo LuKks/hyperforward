@@ -28,6 +28,7 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
 // client
 async function startClient ({ localForward }) {
   let mainPeer;
+  let useMain = false;
 
   const tcp = net.createServer();
   tcp.on('close', () => debug('tcp server closed'));
@@ -39,7 +40,7 @@ async function startClient ({ localForward }) {
     debug('local connection');
     addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
 
-    if (mainPeer) {
+    if (useMain && mainPeer) {
       const dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
@@ -90,6 +91,7 @@ async function startClient ({ localForward }) {
 
       if (mainPeer) {
         swarm.leave(topic);
+        useMain = true;
         pump(peer, local, peer);
       } else {
         mainPeer = peer;
