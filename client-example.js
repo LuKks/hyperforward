@@ -60,7 +60,7 @@ async function startClient ({ localForward }) {
 
       let peer = dht.connect(serverKeyPair.publicKey, {
         keyPair: clientKeyPair,
-        relay
+        // relayAddresses: []
       });
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
