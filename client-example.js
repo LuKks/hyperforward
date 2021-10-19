@@ -45,7 +45,7 @@ async function startClient ({ localForward }) {
       dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
-        bootstrap: mainPeer ? [mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort] : undefined,
+        bootstrap: mainPeer ? [] : undefined,
         // socket: udpSocket,
         nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }] : undefined,
         // Optionally pass a port you prefer to bind to instead of a random one
