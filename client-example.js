@@ -40,8 +40,9 @@ async function startClient ({ localForward }) {
     debug('local connection');
     addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
 
+    let dht;
     if (useMain && mainPeer) {
-      const dht = new DHT({
+      dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
         bootstrap: mainPeer ? [mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort] : undefined,
@@ -80,7 +81,7 @@ async function startClient ({ localForward }) {
     const swarm = new Hyperswarm({
       keyPair: clientKeyPair,
       firewall: onFirewall([serverKeyPair.publicKey]),
-      bootstrap: mainPeer ? [dht._sockets.localServerAddress().host + ':' + dht._sockets.localServerAddress().port] : undefined
+      bootstrap: (useMain && mainPeer) ? [dht._sockets.localServerAddress().host + ':' + dht._sockets.localServerAddress().port] : undefined
     });
 
     swarm.on('connection', (peer, peerInfo) => {
