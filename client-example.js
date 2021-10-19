@@ -42,6 +42,8 @@ async function startClient ({ localForward }) {
 
     let dht;
     if (useMain && mainPeer) {
+      debug('mainPeer', mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort, '(' + mainPeer.rawStream.remoteFamily + ')', 'hostport', mainPeer.host, mainPeer.port);
+
       dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
@@ -61,7 +63,7 @@ async function startClient ({ localForward }) {
 
       let peer = dht.connect(serverKeyPair.publicKey, {
         keyPair: clientKeyPair,
-        // relayAddresses: [{ host: '', port: '' }]
+        relayAddresses: [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }]
       });
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
