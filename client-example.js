@@ -18,9 +18,10 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
   const localForward = { address: '127.0.0.1', port: '3001' };
   await startClient({ localForward });
 
+  await simulateRequest(localForward);
   while (true) {
-    await simulateRequest(localForward);
     await sleep(5000);
+    await simulateRequest(localForward);
   }
 })();
 
@@ -82,16 +83,19 @@ async function startClient ({ localForward }) {
       bootstrap: mainPeer ? [dht._sockets.localServerAddress().host + ':' + dht._sockets.localServerAddress().port] : undefined
     });
 
-    swarm.once('connection', (peer, peerInfo) => {
-      swarm.leave(topic);
-
+    swarm.on('connection', (peer, peerInfo) => {
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
-      // debug('peerInfo', peerInfo);
+      debug('peerInfo', peerInfo);
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
-      if (!mainPeer) {
+
+      if (mainPeer) {
+        swarm.leave(topic);
+        pump(peer, local, peer);
+      } else {
         mainPeer = peer;
+        // keep it open
       }
-      pump(peer, local, peer);
+
       // mimic(local, peer);
       // mimic(peer, local);
     });

@@ -50,7 +50,7 @@ async function startServer ({ remoteForward }) {
   swarm.on('connection', (peer, peerInfo) => {
     console.log('----------');
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-    // debug('peerInfo', peerInfo);
+    debug('peerInfo', peerInfo);
 
     addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
