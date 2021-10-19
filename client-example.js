@@ -33,7 +33,6 @@ async function startClient ({ localForward }) {
   tcp.on('connection', onConnection);
   tcp.listen(localForward.port, localForward.address);
 
-
   async function onConnection (local) {
     console.log('----------');
     debug('local connection');
@@ -77,10 +76,4 @@ async function simulateRequest (localForward) {
   let response = await fetch('http://' + localForward.address + ':' + localForward.port);
   let data = await response.text();
   console.log(data);
-  /*const localSocket = net.connect(localForward.port, localForward.address);
-  addSocketLogs('localSocket', localSocket, ['error', 'timeout', 'end', 'finish', 'close']);
-  localSocket.on('data', (chunk) => debug('local data', chunk));
-  localSocket.on('finish', () => localSocket.destroy());
-  localSocket.write('ping');
-  localSocket.end();*/
 }

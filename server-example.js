@@ -50,6 +50,7 @@ async function startServer ({ remoteForward }) {
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
     addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);
+
     pump(peer, remote, peer);
     // mimic(peer, remote);
     // mimic(remote, peer);
@@ -60,4 +61,6 @@ async function startServer ({ remoteForward }) {
   debug('discovery joined');
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
+
+  debug(swarm.dht);
 }
