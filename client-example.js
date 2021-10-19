@@ -42,7 +42,7 @@ async function startClient ({ localForward }) {
       const dht = new DHT({
         // ephemeral: false,
         // adaptive: true,
-        bootstrap: mainPeer ? [mainPeer.rawStream.remoteAddress + ':' + mainPeer.rawStream.remotePort] : undefined,
+        bootstrap: mainPeer ? [] : undefined,
         // socket: udpSocket,
         nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }] : undefined,
         // Optionally pass a port you prefer to bind to instead of a random one
@@ -64,7 +64,7 @@ async function startClient ({ localForward }) {
       peer.on('open', () => {
         peer.removeListener('error', noop);
 
-        debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+        debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
         addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
         if (!mainPeer) {
           mainPeer = peer;
@@ -85,12 +85,11 @@ async function startClient ({ localForward }) {
     swarm.once('connection', (peer, peerInfo) => {
       swarm.leave(topic);
 
-      debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+      debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
       // debug('peerInfo', peerInfo);
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       if (!mainPeer) {
         mainPeer = peer;
-        console.log(mainPeer.host, mainPeer.port);
       }
       pump(peer, local, peer);
       // mimic(local, peer);
