@@ -59,6 +59,7 @@ async function startClient ({ localForward }) {
       let peer = dht.connect(serverKeyPair.publicKey, {
         keyPair: clientKeyPair
       });
+      addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
       peer.on('open', () => {
         peer.removeListener('error', noop);
@@ -89,6 +90,7 @@ async function startClient ({ localForward }) {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       if (!mainPeer) {
         mainPeer = peer;
+        console.log(mainPeer.host, mainPeer.port);
       }
       pump(peer, local, peer);
       // mimic(local, peer);
