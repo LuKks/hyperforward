@@ -50,7 +50,6 @@ async function startClientDht ({ localForward }) {
 
       pump(peer, local, peer);
     });
-    process.stdin.pipe(peer).pipe(process.stdout);
   }
 }
 
