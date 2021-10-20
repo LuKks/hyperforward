@@ -34,13 +34,14 @@ async function startClientDht ({ localForward }) {
   tcp.on('connection', onConnection);
   tcp.listen(localForward.port, localForward.address);
 
+  const node = new DHT();
+
   async function onConnection (local) {
     addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
 
     console.log('----------');
     debug('local connection');
 
-    const node = new DHT();
     let peer = node.connect(serverKeyPair.publicKey);
     peer.on('open', function () {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
