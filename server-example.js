@@ -62,5 +62,6 @@ async function startServer ({ remoteForward }) {
 
   // this makes the server accept connections on this keypair
   await server.listen(serverKeyPair);
-  debug('nodes after listen', node.nodes.toArray());
+  debug('address after listen', node.address());
+  // debug('nodes after listen', node.nodes.toArray());
 }
