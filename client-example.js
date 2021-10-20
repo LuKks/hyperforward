@@ -42,11 +42,12 @@ async function startClientDht ({ localForward }) {
     console.log('----------');
     debug('local connection');
 
+    let started = Date.now();
     let peer = node.connect(serverKeyPair.publicKey);
     peer.on('open', function () {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
-      debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
+      debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started);
 
       pump(peer, local, peer);
     });
