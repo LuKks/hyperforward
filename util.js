@@ -102,15 +102,15 @@ function onFirewall (clientPublicKeys) {
     for (let i = 0; i < clientPublicKeys.length; i++) {
       let publicKey = clientPublicKeys[i];
       if (publicKey === '*') {
-        return false;
+        return true;
       }
       if (remotePublicKey.equals(publicKey)) {
         console.log('onFirewall, allowed public key:\n' + remotePublicKey.toString('hex')/*, remoteHandshakePayload*/);
-        return false;
+        return true;
       }
     }
     // console.log('onFirewall, denied public key:\n' + remotePublicKey.toString('hex')/*, remoteHandshakePayload*/);
-    return true;
+    return false;
   };
 }
 
