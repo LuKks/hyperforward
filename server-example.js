@@ -41,11 +41,14 @@ async function startServer ({ remoteForward }) {
     firewall: onFirewall([clientKeyPair.publicKey])
   });
 
+  debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
+
   swarm.dht.on('listening', () => {
     debug('swarm dht listening');
     debug('remoteServerAddress', swarm.dht._sockets.remoteServerAddress());
     debug('localServerAddress', swarm.dht._sockets.localServerAddress());
     debug('relayAddresses', swarm.server.relayAddresses);
+    debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
   });
 
   swarm.on('connection', (peer, peerInfo) => {
@@ -63,33 +66,23 @@ async function startServer ({ remoteForward }) {
     // mimic(remote, peer);
 
     setTimeout(() => {
-      debug('discovery', { ...discovery, server: '~' });
+      // debug('discovery', { ...discovery, server: '~' });
     }, 10);
   });
 
   const topic = Buffer.alloc(32).fill('fwd-test');
   const discovery = swarm.join(topic, { server: true, client: false });
-  debug('discovery joined', { ...discovery, server: '~' });
+  // debug('discovery joined', { ...discovery, server: '~' });
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
 
-  return;
-  debug('swarm', swarm);
+  // debug('swarm', swarm);
 
   debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
-  debug('dht.listening[0]', swarm.dht.listening[0]);
-  debug('dht.bootstrapNodes', swarm.dht.bootstrapNodes);
-  debug('dht._router', swarm.dht._router);
-  debug('dht._sockets', swarm.dht._sockets);
-  debug('dht.io', swarm.dht.io);
-
-  console.log('-----------');
-
-  debug('server', swarm.server);
-  debug('server.dht._nat', swarm.server.dht._nat.host, swarm.server.dht._nat.port);
-  debug('server.dht.listening[0]', swarm.server.dht.listening[0]);
-  debug('server.dht.bootstrapNodes', swarm.server.dht.bootstrapNodes);
-  debug('server.dht._router', swarm.server.dht._router);
-  debug('server.dht._sockets', swarm.server.dht._sockets);
-  debug('dht.io', swarm.server.dht.io);
+  // debug('dht.listening[0]', swarm.dht.listening[0]);
+  // debug('dht.bootstrapNodes', swarm.dht.bootstrapNodes);
+  // debug('dht._router', swarm.dht._router);
+  // debug('dht._sockets', swarm.dht._sockets);
+  // debug('dht.io', swarm.dht.io);
+  // debug('server', swarm.server);
 }
