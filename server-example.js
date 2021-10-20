@@ -61,13 +61,19 @@ async function startServer ({ remoteForward }) {
     pump(peer, remote, peer);
     // mimic(peer, remote);
     // mimic(remote, peer);
+
+    setTimeout(() => {
+      debug('discovery', { ...discovery, server: '~' });
+    }, 10);
   });
 
   const topic = Buffer.alloc(32).fill('fwd-test');
   const discovery = swarm.join(topic, { server: true, client: false });
-  debug('discovery joined');
+  debug('discovery joined', { ...discovery, server: '~' });
   await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
   debug('discovery flushed');
+
+  return;
   debug('swarm', swarm);
 
   debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);

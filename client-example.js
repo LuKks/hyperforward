@@ -49,7 +49,7 @@ async function startClient ({ localForward }) {
         // adaptive: true,
         bootstrap: mainPeer ? [] : undefined,
         // socket: udpSocket,
-        nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }] : undefined,
+        nodes: mainPeer ? [{ host: mainPeer.rawStream.remoteAddress, port: 49738 }] : undefined,
         // Optionally pass a port you prefer to bind to instead of a random one
         // bind: 0,
       });
@@ -63,7 +63,7 @@ async function startClient ({ localForward }) {
 
       let peer = dht.connect(serverKeyPair.publicKey, {
         keyPair: clientKeyPair,
-        relayAddresses: [{ host: mainPeer.rawStream.remoteAddress, port: mainPeer.rawStream.remotePort }]
+        nodes: [{ host: mainPeer.rawStream.remoteAddress, port: 49738 }]
       });
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
       peer.on('error', noop);
@@ -78,12 +78,14 @@ async function startClient ({ localForward }) {
         pump(peer, local, peer);        
       });
       function noop () {}
+
+      return;
     }
 
     const swarm = new Hyperswarm({
       keyPair: clientKeyPair,
       firewall: onFirewall([serverKeyPair.publicKey]),
-      bootstrap: (useMain && mainPeer) ? [dht._sockets.localServerAddress().host + ':' + dht._sockets.localServerAddress().port] : undefined
+      bootstrap: (useMain && mainPeer) ? [dht._sockets.localServerAddress().host + ':' + 49738] : undefined
     });
 
     swarm.on('connection', (peer, peerInfo) => {
@@ -95,10 +97,10 @@ async function startClient ({ localForward }) {
 
       if (mainPeer) {
         swarm.leave(topic);
+        useMain = true;
         pump(peer, local, peer);
       } else {
         mainPeer = peer;
-        useMain = true;
         // keep it open
       }
 
