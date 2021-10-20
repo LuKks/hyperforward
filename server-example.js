@@ -37,6 +37,7 @@ function startRemote () {
 // server
 async function startServer ({ remoteForward }) {
   const node = new DHT();
+  debug('nodes', node.nodes.toArray());
 
   // create a server to listen for secure connections
   const server = node.createServer({
@@ -49,6 +50,7 @@ async function startServer ({ remoteForward }) {
     console.log('----------');
     debug('peer', peer);
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+    debug('nodes after peer', node.nodes.toArray());
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
     addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);
@@ -58,41 +60,5 @@ async function startServer ({ remoteForward }) {
 
   // this makes the server accept connections on this keypair
   await server.listen(serverKeyPair);
-
-  /*
-  const swarm = new Hyperswarm({
-    keyPair: serverKeyPair,
-    
-  });
-
-  debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
-
-  swarm.dht.on('listening', () => {
-    debug('swarm dht listening');
-    debug('remoteServerAddress', swarm.dht._sockets.remoteServerAddress());
-    debug('localServerAddress', swarm.dht._sockets.localServerAddress());
-    debug('relayAddresses', swarm.server.relayAddresses);
-    debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
-  });
-
-  swarm.on('connection', (peer, peerInfo) => {
-    
-  });
-
-  const topic = Buffer.alloc(32).fill('fwd-test');
-  const discovery = swarm.join(topic, { server: true, client: false });
-  // debug('discovery joined', { ...discovery, server: '~' });
-  await discovery.flushed(); // Waits for the topic to be fully announced on the DHT
-  debug('discovery flushed');
-
-  // debug('swarm', swarm);
-
-  debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
-  // debug('dht.listening[0]', swarm.dht.listening[0]);
-  // debug('dht.bootstrapNodes', swarm.dht.bootstrapNodes);
-  // debug('dht._router', swarm.dht._router);
-  // debug('dht._sockets', swarm.dht._sockets);
-  // debug('dht.io', swarm.dht.io);
-  // debug('server', swarm.server);
-  */
+  debug('nodes after listen', node.nodes.toArray());
 }
