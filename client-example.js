@@ -47,6 +47,7 @@ async function startClientDht ({ localForward }) {
     peer.on('open', function () {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
+      debug('peer', peer);
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started);
 
       pump(peer, local, peer);
