@@ -37,7 +37,8 @@ function startRemote () {
 // server
 async function startServer ({ remoteForward }) {
   const node = new DHT();
-  debug('nodes', node.nodes.toArray());
+  debug('address', node.address());
+  // debug('nodes', node.nodes.toArray());
 
   // create a server to listen for secure connections
   const server = node.createServer({
@@ -50,7 +51,8 @@ async function startServer ({ remoteForward }) {
     console.log('----------');
     debug('peer', peer);
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-    debug('nodes after peer', node.nodes.toArray());
+    debug('address after peer', node.address());
+    // debug('nodes after peer', node.nodes.toArray());
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
     addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);

@@ -34,8 +34,11 @@ async function startClientDht ({ localForward }) {
   tcp.on('connection', onConnection);
   tcp.listen(localForward.port, localForward.address);
 
-  const node = new DHT();
-  debug('nodes', node.nodes.toArray());
+  const node = new DHT({
+    ephemeral: false
+  });
+  debug('address', node.address());
+  // debug('nodes', node.nodes.toArray());
 
   async function onConnection (local) {
     addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
@@ -45,13 +48,15 @@ async function startClientDht ({ localForward }) {
 
     let started = Date.now();
     let peer = node.connect(serverKeyPair.publicKey);
-    debug('nodes after connect', node.nodes.toArray());
+    debug('address after connect', node.address());
+    // debug('nodes after connect', node.nodes.toArray());
     peer.on('open', function () {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
       debug('peer', peer);
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started);
-      debug('nodes after peer', node.nodes.toArray());
+      debug('address after connect', node.address());
+      // debug('nodes after peer', node.nodes.toArray());
 
       pump(peer, local, peer);
     });
