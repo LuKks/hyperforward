@@ -36,9 +36,33 @@ function startRemote () {
 
 // server
 async function startServer ({ remoteForward }) {
+  const node = new DHT();
+
+  // create a server to listen for secure connections
+  const server = node.createServer({
+    firewall: onFirewall([clientKeyPair.publicKey])
+  });
+
+  server.on('connection', function (peer) {
+    addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+
+    console.log('----------');
+    debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
+    debug('peerInfo', peerInfo);
+
+    let remote = net.connect(remoteForward.port, remoteForward.address);
+    addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);
+
+    pump(peer, remote, peer);
+  });
+
+  // this makes the server accept connections on this keypair
+  await server.listen(serverKeyPair);
+
+  /*
   const swarm = new Hyperswarm({
     keyPair: serverKeyPair,
-    firewall: onFirewall([clientKeyPair.publicKey])
+    
   });
 
   debug('dht._nat', swarm.dht._nat.host, swarm.dht._nat.port);
@@ -52,22 +76,7 @@ async function startServer ({ remoteForward }) {
   });
 
   swarm.on('connection', (peer, peerInfo) => {
-    console.log('----------');
-    debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
-    debug('peerInfo', peerInfo);
-
-    addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
-
-    let remote = net.connect(remoteForward.port, remoteForward.address);
-    addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);
-
-    pump(peer, remote, peer);
-    // mimic(peer, remote);
-    // mimic(remote, peer);
-
-    setTimeout(() => {
-      // debug('discovery', { ...discovery, server: '~' });
-    }, 10);
+    
   });
 
   const topic = Buffer.alloc(32).fill('fwd-test');
@@ -85,4 +94,5 @@ async function startServer ({ remoteForward }) {
   // debug('dht._sockets', swarm.dht._sockets);
   // debug('dht.io', swarm.dht.io);
   // debug('server', swarm.server);
+  */
 }

@@ -16,7 +16,8 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
 // setup
 (async () => {
   const localForward = { address: '127.0.0.1', port: '3001' };
-  await startClient({ localForward });
+  // await startClient({ localForward });
+  await startClientDht({ localForward });
 
   simulateRequest(localForward);
   while (true) {
@@ -24,6 +25,32 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
     await simulateRequest(localForward);
   }
 })();
+
+// client
+async function startClientDht ({ localForward }) {
+  const tcp = net.createServer();
+  tcp.on('close', () => debug('tcp server closed'));
+  tcp.on('connection', onConnection);
+  tcp.listen(localForward.port, localForward.address);
+
+  async function onConnection (local) {
+    addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
+
+    console.log('----------');
+    debug('local connection');
+
+    const node = new DHT();
+    let peer = node.connect(serverKeyPair.publicKey);
+    peer.on('open', function () {
+      addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
+
+      debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'hostport', peer.host, peer.port);
+
+      pump(peer, local, peer);
+    });
+    process.stdin.pipe(peer).pipe(process.stdout);
+  }
+}
 
 // client
 async function startClient ({ localForward }) {
