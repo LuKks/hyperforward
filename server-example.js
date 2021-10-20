@@ -49,7 +49,7 @@ async function startServer ({ remoteForward }) {
     addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
     console.log('----------');
-    debug('peer', peer);
+    // debug('peer', peer);
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
     debug('address after peer', node.address());
     // debug('nodes after peer', node.nodes.toArray());
