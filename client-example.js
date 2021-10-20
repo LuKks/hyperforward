@@ -19,6 +19,7 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
   // await startClient({ localForward });
   await startClientDht({ localForward });
 
+  await sleep(500);
   simulateRequest(localForward);
   while (true) {
     await sleep(5000);
