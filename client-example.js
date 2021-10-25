@@ -56,7 +56,7 @@ async function startClientDht ({ localForward }) {
       // debug('peer', peer);
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started);
       debug('address after connect', node.address());
-      // debug('nodes after peer', node.nodes.toArray());
+      setTimeout(() => debug('nodes after peer', node.nodes.toArray()), 1000);
 
       pump(peer, local, peer);
     });

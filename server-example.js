@@ -36,7 +36,11 @@ function startRemote () {
 
 // server
 async function startServer ({ remoteForward }) {
-  const node = new DHT();
+  const node = new DHT({
+    // ephemeral: false,
+    // adaptive: false,
+    bind: 50001
+  });
   debug('address', node.address());
   // debug('nodes', node.nodes.toArray());
 
@@ -53,6 +57,7 @@ async function startServer ({ remoteForward }) {
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
     debug('address after peer', node.address());
     // debug('nodes after peer', node.nodes.toArray());
+    node.addNode({ host, port });
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
     addSocketLogs('remote', remote, ['error', 'timeout', 'end', 'finish', 'close']);
