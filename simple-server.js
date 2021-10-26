@@ -28,7 +28,7 @@ async function startServer ({ remoteForward }) {
   const server = node.createServer({
     firewall: function (remotePublicKey, remoteHandshakePayload) {
       console.log('on firewall, allowed public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload)
-      return remotePublicKey.equals(clientKeyPair.publicKey)
+      return !remotePublicKey.equals(clientKeyPair.publicKey)
     }
   })
 
