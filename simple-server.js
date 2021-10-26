@@ -27,13 +27,14 @@ async function startServer ({ remoteForward }) {
 
   const server = node.createServer({
     firewall: function (remotePublicKey, remoteHandshakePayload) {
-      console.log('on firewall, allowed public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload)
+      console.log('on firewall, public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload)
       return !remotePublicKey.equals(clientKeyPair.publicKey)
     }
   })
 
   server.on('connection', function (peer) {
-    console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')')
+    const raw = peer.rawStream
+    console.log('peer', raw.remoteAddress + ':' + raw.remotePort, '(' + raw.remoteFamily + ')')
 
     const remote = net.connect(remoteForward.port, remoteForward.address)
     pump(peer, remote, peer)

@@ -36,7 +36,8 @@ async function startClientDht ({ localForward }) {
     const started = Date.now()
     const peer = node.connect(serverKeyPair.publicKey)
     peer.on('open', function () {
-      console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started)
+      const raw = peer.rawStream
+      console.log('peer', raw.remoteAddress + ':' + raw.remotePort, '(' + raw.remoteFamily + ')', 'delay', Date.now() - started, 'ms')
 
       pump(peer, local, peer)
     })
