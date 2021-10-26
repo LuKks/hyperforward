@@ -30,7 +30,7 @@
     "hyperswarm"
   ],
   "dependencies": {
-    "@hyperswarm/dht": "^5.0.0-rc.12",
+    "@hyperswarm/dht": "^5.0.1",
     "@lukks/noise-network": "lukks/noise-network#dev",
     "debug": "^4.3.2",
     "express": "^4.17.1",
