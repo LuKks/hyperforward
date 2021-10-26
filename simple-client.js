@@ -56,3 +56,7 @@ async function simulateRequest (localForward) {
   let data = await response.text();
   console.log(data);
 }
+
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
