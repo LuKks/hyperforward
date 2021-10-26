@@ -8,9 +8,10 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
 
 // setup
 (async () => {
-  await startRemote();
-
   const remoteForward = { address: '127.0.0.1', port: '3000' };
+
+  await startRemote(remoteForward);
+
   await startServer({ remoteForward });
 })();
 
@@ -43,11 +44,11 @@ async function startServer ({ remoteForward }) {
 }
 
 // remote (can be anything)
-function startRemote ({ remoteForward }) {
+function startRemote (remoteForward) {
   return new Promise(resolve => {
     const app = express();
     app.use((req, res, next) => console.log('req incoming') & next());
     app.get('/', (req, res) => res.send('Hello World! ' + Math.random()));
-    app.listen(3000, '127.0.0.1', resolve);
+    app.listen(remoteForward.port, remoteForward.address, resolve);
   });
 }
