@@ -37,6 +37,8 @@ async function startClientDht ({ localForward }) {
   const node = new DHT({
     ephemeral: false
   });
+  debug('wait for node ready:');
+  await node.ready();
   debug('address', node.address());
   // debug('nodes', node.nodes.toArray());
 
