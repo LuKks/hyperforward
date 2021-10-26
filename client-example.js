@@ -40,7 +40,7 @@ async function startClientDht ({ localForward }) {
   debug('wait for node ready:');
   await node.ready();
   debug('address', node.address());
-  // debug('nodes', node.nodes.toArray());
+  // debug('nodes', node.toArray());
 
   async function onConnection (local) {
     addSocketLogs('local', local, ['error', 'open', 'timeout', 'end', 'finish', 'close']);
@@ -51,14 +51,14 @@ async function startClientDht ({ localForward }) {
     let started = Date.now();
     let peer = node.connect(serverKeyPair.publicKey);
     debug('address after connect', node.address());
-    // debug('nodes after connect', node.nodes.toArray());
+    // debug('nodes after connect', node.toArray());
     peer.on('open', function () {
       addSocketLogs('peer', peer, ['error', 'connect', 'handshake', 'connected', 'open', 'timeout', 'end'/*, 'drain'*/, 'finish', 'close']);
 
       // debug('peer', peer);
       debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')', 'delay', Date.now() - started);
       debug('address after connect', node.address());
-      setTimeout(() => debug('nodes after peer', node.nodes.toArray()), 1000);
+      setTimeout(() => debug('nodes after peer', node.toArray()), 1000);
 
       pump(peer, local, peer);
     });

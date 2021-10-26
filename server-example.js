@@ -44,7 +44,7 @@ async function startServer ({ remoteForward }) {
   debug('wait for node ready:');
   await node.ready();
   debug('address', node.address());
-  // debug('nodes', node.nodes.toArray());
+  // debug('nodes', node.toArray());
 
   // create a server to listen for secure connections
   const server = node.createServer({
@@ -58,7 +58,7 @@ async function startServer ({ remoteForward }) {
     // debug('peer', peer);
     debug('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
     debug('address after peer', node.address());
-    // debug('nodes after peer', node.nodes.toArray());
+    debug('nodes after peer', node.toArray());
     // node.addNode({ host: peer.rawStream.remoteAddress, port: peer.rawStream.remotePort });
 
     let remote = net.connect(remoteForward.port, remoteForward.address);
@@ -70,5 +70,5 @@ async function startServer ({ remoteForward }) {
   // this makes the server accept connections on this keypair
   await server.listen(serverKeyPair);
   debug('address after listen', node.address());
-  // debug('nodes after listen', node.nodes.toArray());
+  // debug('nodes after listen', node.toArray());
 }
