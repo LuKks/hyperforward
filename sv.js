@@ -27,7 +27,7 @@ startRemote().then(setup)
 
 async function setup () {
   const tunnel = utp() // + tcp?
-  tunnel.listen(7331)
+  tunnel.listen(57331)
 
   const node = new DHT({ keyPair: serverKeyPair })
   await node.ready()
@@ -52,7 +52,7 @@ async function setup () {
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
-      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress.replace('::ffff:', '')) // + does utp works with ipv6? ie. ::ffff:190.246.123.123:53546
+      tunnel.send(buf, 0, buf.length, 57331, rawStream.remoteAddress.replace('::ffff:', '')) // + does utp works with ipv6? ie. ::ffff:190.246.123.123:53546
     }
     peer.on('close', () => clearInterval(intervalId))
     // peer.on('close', () => process.exit())

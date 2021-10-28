@@ -30,7 +30,7 @@ async function setup () {
   tunnel.on('message', function (buffer, rinfo) {
     console.log('tunnel on message', buffer.toString(), rinfo)
   })
-  tunnel.bind(7331)
+  tunnel.bind(57331)
 
   const node = new DHT({ keyPair: clientKeyPair })
   await node.ready()
@@ -49,7 +49,7 @@ async function setup () {
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
-      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress)
+      tunnel.send(buf, 0, buf.length, 57331, rawStream.remoteAddress)
     }
     peer.on('close', () => clearInterval(intervalId))
     peer.on('close', () => process.exit())
@@ -58,7 +58,7 @@ async function setup () {
       console.log('local forward on connection')
 
       const started = Date.now()
-      const peerTunnel = tunnel.connect(7331, rawStream.remoteAddress)
+      const peerTunnel = tunnel.connect(57331, rawStream.remoteAddress)
       const noisy = noisePeer(peerTunnel, true, {
         pattern: 'XX',
         staticKeyPair: noisyClientKeyPair,
