@@ -3,6 +3,7 @@ const net = require('net')
 const express = require('express')
 const pump = require('pump')
 const crypto = require('crypto')
+const channels = require('stream-channels')
 
 const serverKeyPair = DHT.keyPair(Buffer.from('524ad00b147e1709e7fd99e2820f8258fd30ed043c631233ac35e17f9ec10333', 'hex'))
 const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992109c9fbdfa55ab1cfa528117fff9acd', 'hex'))
@@ -26,9 +27,6 @@ async function startServer ({ remoteForward }) {
   // console.log('bootstrap ready', bootstrap.address())
 
   const node = new DHT({
-    bind: 7331,
-    ephemeral: false,
-    // bootstrap: ['127.0.0.1:' + bootstrap.address().port],
     keyPair: serverKeyPair
   })
   await node.ready()
@@ -45,18 +43,14 @@ async function startServer ({ remoteForward }) {
     const raw = peer.rawStream
     console.log('peer', raw.remoteAddress + ':' + raw.remotePort, '(' + raw.remoteFamily + ')')
 
-    const remote = net.connect(remoteForward.port, remoteForward.address)
-    pump(peer, remote, peer)
+    peer.on('data', console.log)
+
+    // const remote = net.connect(remoteForward.port, remoteForward.address)
+    // pump(peer, remote, peer)
   })
 
   await server.listen(serverKeyPair)
   console.log('server ready', server.address())
-
-  const stream = node.announce(topic, serverKeyPair)
-  console.log('node announce')
-  for await (const data of stream) {
-    console.log('node announce', data)
-  }
 }
 
 // remote (can be anything)

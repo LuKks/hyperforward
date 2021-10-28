@@ -1,4 +1,11 @@
 const utp = require('utp-native')
+const net = require('net')
+const bind = require('bind-easy')
+
+const HOME_IP = '190.246.133.196'
+const MOBILE_IP = '186.12.32.218'
+
+const { server, socket } = await bind.dual(11338)
 
 const peer = utp()
 
@@ -29,11 +36,11 @@ peer.bind(11337/*, '0.0.0.0'*/, function () {
   console.log('peer on bind')
 })
 
-// holepunch to home
-// send(peer, 'ping', 11337, '190.246.133.196')
-
-// holepunch to 4g
-// send(peer, 'ping', 11337, '186.12.32.218')
+// holepunch
+send(peer, 'ping', 11337, MOBILE_IP)
+send(peer, 'ping', 11338, MOBILE_IP)
+socket.send('ping', 11337, MOBILE_IP)
+socket.send('ping', 11338, MOBILE_IP)
 
 function send (socket, data, port, address) {
   let buf = Buffer.from(data)

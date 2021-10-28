@@ -3,6 +3,8 @@ const net = require('net')
 const fetch = require('node-fetch')
 const pump = require('pump')
 const crypto = require('crypto')
+const Mplex = require('libp2p-mplex')
+const noisePeer = require('noise-peer')
 
 const serverKeyPair = DHT.keyPair(Buffer.from('524ad00b147e1709e7fd99e2820f8258fd30ed043c631233ac35e17f9ec10333', 'hex'))
 const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992109c9fbdfa55ab1cfa528117fff9acd', 'hex'))
@@ -25,45 +27,42 @@ async function setup () {
 // client
 async function startClientDht ({ localForward }) {
   const node = new DHT({
-    bind: 7332,
-    ephemeral: false,
     keyPair: clientKeyPair
   })
   await node.ready()
   console.log('node ready', node.address())
 
-  const started = Date.now()
-  const mainPeer = node.connect(serverKeyPair.publicKey)
-  mainPeer.on('open', function () {
-    const raw = mainPeer.rawStream
-    console.log('mainPeer', raw.remoteAddress + ':' + raw.remotePort, '(' + raw.remoteFamily + ')', 'delay', Date.now() - started, 'ms')
+  const peer = node.connect(serverKeyPair.publicKey)
+  peer.on('open', function () {
+    const { rawStream } = peer
+    console.log('peer', rawStream.remoteAddress + ':' + rawStream.remotePort, '(' + rawStream.remoteFamily + ')')
 
-    node.addNode({ host: raw.remoteAddress, port: raw.remotePort })
-    node.addNode({ host: raw.remoteAddress, port: '8331' })
+    peer.on('data', console.log)
+
+    const socket = net.connect(peer.rawStream.remotePort, peer.rawStream.remoteAddress)
+    socket.write('hey!')
+    socket.end()
   })
 
-  await sleep(3000)
+  return
+
+  await sleep(5000)
 
   return async function (local) {
-    const started = Date.now()
     console.log('local connection')
 
-    const stream = node.lookup(topic)
+    const socket = net.connect(peer.rawStream.remotePort, peer.rawStream.remoteAddress)
+    const noisy = noisePeer(socket, true, {
+      pattern: 'XK',
+      staticKeyPair: clientKeyPair,
+      remoteStaticKey: serverKeyPair.publicKey
+    })
+    noisy.write('hey!')
+    noisy.end()
 
-    for await (const data of stream) {
-      console.log('node lookup', data, Date.now() - started, 'ms')
+    peer.write('hey')
 
-      const peer = node.connect(data.peers[0].publicKey)
-      peer.on('open', function () {
-        const raw = peer.rawStream
-        console.log('peer', raw.remoteAddress + ':' + raw.remotePort, '(' + raw.remoteFamily + ')', 'delay', Date.now() - started, 'ms')
-
-        pump(peer, local, peer)
-      })
-
-      // stream.destroy()
-      break
-    }
+    // pump(peer, local, peer)
   }
 }
 
@@ -78,9 +77,10 @@ function startLocal (onConnection, { localForward }) {
 }
 
 async function simulateRequest (localForward) {
+  const started = Date.now()
   const response = await fetch('http://' + localForward.address + ':' + localForward.port)
   const data = await response.text()
-  console.log(data)
+  console.log(data, 'delay', Date.now() - started, 'ms')
 }
 
 function sleep (ms) {
