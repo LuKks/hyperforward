@@ -52,7 +52,7 @@ async function setup () {
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
-      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress)
+      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress.replace('::ffff:', ''))
     }
     peer.on('close', () => clearInterval(intervalId))
     // peer.on('close', () => process.exit())
