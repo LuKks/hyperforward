@@ -90,7 +90,7 @@ async function setup () {
 function startRemote () {
   return new Promise(resolve => {
     const app = require('express')();
-    app.use((req, res, next) => debug('req incoming') & next());
+    app.use((req, res, next) => console.log('req incoming') & next());
     app.get('/', (req, res) => res.send('Hello World! ' + Math.random()));
     app.listen(3000, '127.0.0.1', resolve);
   });

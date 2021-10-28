@@ -89,7 +89,7 @@ async function loop () {
 
 function startLocalForward ({ port, address }, onConnection) {
   const tcp = net.createServer()
-  tcp.on('close', () => debug('tcp server closed'))
+  tcp.on('close', () => console.log('tcp server closed'))
   tcp.on('connection', onConnection)
   tcp.listen(port, address)
   return tcp
