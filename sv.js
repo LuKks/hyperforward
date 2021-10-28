@@ -76,8 +76,9 @@ async function setup () {
     })
 
     noisy.on('connected', function () {
-      console.log('noisy connected')
-      pump(noisy, socket, noisy)
+      console.log('noisy connected directly')
+      const remote = net.connect(3000, '127.0.0.1')
+      pump(noisy, remote, noisy)
     })
   })
 

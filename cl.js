@@ -57,6 +57,7 @@ async function setup () {
     const localForward = startLocalForward({ port: 3001, address: '127.0.0.1' }, function (socket) {
       console.log('local forward on connection')
 
+      const started = Date.now()
       const peerTunnel = tunnel.connect(7331, rawStream.remoteAddress)
       const noisy = noisePeer(peerTunnel, true, {
         pattern: 'XX',
@@ -69,6 +70,7 @@ async function setup () {
       })
 
       noisy.on('connected', function () {
+        console.log('noisy connected directly', 'delay', Date.now() - started, 'ms')
         pump(noisy, socket, noisy)
       })
     })
