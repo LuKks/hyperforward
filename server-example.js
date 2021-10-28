@@ -9,8 +9,14 @@ const { onFirewall, maybeKeygen, addSocketLogs, serverClose, sleep } = require('
 process.env.DEBUG = 'p2p';
 const debug = require('debug')('p2p');
 
-const serverKeyPair = DHT.keyPair(Buffer.from('524ad00b147e1709e7fd99e2820f8258fd30ed043c631233ac35e17f9ec10333', 'hex'));
-const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992109c9fbdfa55ab1cfa528117fff9acd', 'hex'));
+const serverKeyPair = {
+  publicKey: Buffer.from('9425dcb79c1eb89c4ec7f346610eb1c23e3eb73a07e852b71f60bd5a36514f0e', 'hex'),
+  secretKey: Buffer.from('6a629df6f04b026bf4c87fba9c40dfd20cf7b4e3f479278f045a05cbcb96a6739425dcb79c1eb89c4ec7f346610eb1c23e3eb73a07e852b71f60bd5a36514f0e', 'hex')
+}
+const clientKeyPair = {
+  publicKey: Buffer.from('14b80ff4aaf92e4334c4c6700ef7f3a4b332ea632de94acbae08f04f30ad03e1', 'hex'),
+  secretKey: Buffer.from('b881f4fa9f6231ca37d7bd28d0851cf9194fd97d3423c97f7e2ff4815072c35814b80ff4aaf92e4334c4c6700ef7f3a4b332ea632de94acbae08f04f30ad03e1', 'hex')
+}
 
 // setup
 (async () => {
