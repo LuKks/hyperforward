@@ -37,6 +37,7 @@
     "hyperswarm": "^3.0.0-rc.0",
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.5",
-    "pump": "^3.0.0"
+    "pump": "^3.0.0",
+    "utp-native": "^2.5.3"
   }
 }
