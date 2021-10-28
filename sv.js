@@ -35,7 +35,7 @@ async function setup () {
 
   const server = node.createServer({
     firewall: function (remotePublicKey, remoteHandshakePayload) {
-      console.log('on firewall, public key:\n' + remotePublicKey.toString('hex'), remoteHandshakePayload)
+      console.log('on firewall, public key:\n' + remotePublicKey.toString('hex'))
       return !remotePublicKey.equals(clientKeyPair.publicKey)
     }
   })
@@ -45,14 +45,17 @@ async function setup () {
     console.log('peer', rawStream.remoteAddress + ':' + rawStream.remotePort, '(' + rawStream.remoteFamily + ')')
 
     // keep holepunching
-    const intervalId = setInterval(() => {
+    holepunch()
+    const intervalId = setInterval(holepunch, 5000)
+    function holepunch () {
       // + unencrypted
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
       tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress)
-    }, 5000)
+    }
     peer.on('close', () => clearInterval(intervalId))
+    // peer.on('close', () => process.exit())
   })
 
   tunnel.on('connection', function (socket) {

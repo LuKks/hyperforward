@@ -39,14 +39,17 @@ async function setup () {
     console.log('peer', rawStream.remoteAddress + ':' + rawStream.remotePort, '(' + rawStream.remoteFamily + ')')
 
     // keep holepunching
-    const intervalId = setInterval(() => {
+    holepunch()
+    const intervalId = setInterval(holepunch, 5000)
+    function holepunch () {
       // + unencrypted
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
       tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress)
-    }, 5000)
+    }
     peer.on('close', () => clearInterval(intervalId))
+    peer.on('close', () => process.exit())
 
     const localForward = startLocalForward({ port: 3001, address: '127.0.0.1' }, function (socket) {
       const peerTunnel = tunnel.connect(7331, rawStream.remoteAddress)
@@ -66,13 +69,11 @@ async function setup () {
     })
     localForward.on('listening', () => console.log('ready to use!'))
 
-    peer.on('close', () => process.exit())
+    while (true) {
+      await simulateRequest({ address: '127.0.0.1', port: 3001 })
+      await sleep(3000)
+    }
   })
-
-  while (true) {
-    await simulateRequest({ address: '127.0.0.1', port: 3001 })
-    await sleep(3000)
-  }
 }
 
 function startLocalForward ({ port, address }, onConnection) {
@@ -84,9 +85,9 @@ function startLocalForward ({ port, address }, onConnection) {
 }
 
 async function simulateRequest (localForward) {
-  let response = await fetch('http://' + localForward.address + ':' + localForward.port);
-  let data = await response.text();
-  console.log(data);
+  const response = await fetch('http://' + localForward.address + ':' + localForward.port)
+  const data = await response.text()
+  console.log(data)
 }
 
 function sleep (ms) {
