@@ -27,6 +27,9 @@ setup()
 
 async function setup () {
   const tunnel = utp()
+  tunnel.on('message', function (buffer, rinfo) {
+    console.log('tunnel on message', buffer.toString(), rinfo)
+  })
   tunnel.bind(7331)
 
   const node = new DHT({ keyPair: clientKeyPair })
@@ -52,6 +55,8 @@ async function setup () {
     peer.on('close', () => process.exit())
 
     const localForward = startLocalForward({ port: 3001, address: '127.0.0.1' }, function (socket) {
+      console.log('local forward on connection')
+
       const peerTunnel = tunnel.connect(7331, rawStream.remoteAddress)
       const noisy = noisePeer(peerTunnel, true, {
         pattern: 'XX',
@@ -69,11 +74,15 @@ async function setup () {
     })
     localForward.on('listening', () => console.log('ready to use!'))
 
-    while (true) {
-      await simulateRequest({ address: '127.0.0.1', port: 3001 })
-      await sleep(3000)
-    }
+    /*await */loop()
   })
+}
+
+async function loop () {
+  while (true) {
+    await simulateRequest({ address: '127.0.0.1', port: 3001 })
+    await sleep(3000)
+  }
 }
 
 function startLocalForward ({ port, address }, onConnection) {

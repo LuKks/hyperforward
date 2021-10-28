@@ -58,6 +58,10 @@ async function setup () {
     // peer.on('close', () => process.exit())
   })
 
+  tunnel.on('message', function (buffer, rinfo) {
+    console.log('tunnel on message', buffer.toString(), rinfo)
+  })
+
   tunnel.on('connection', function (socket) {
     console.log('tunnel on connection', socket.remoteAddress, socket.remotePort, socket.remoteFamily)
 
