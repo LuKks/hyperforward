@@ -52,7 +52,7 @@ async function setup () {
       // + assumed address?
       // + assumed port
       const buf = Buffer.from('holepunch')
-      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress.replace('::ffff:', ''))
+      tunnel.send(buf, 0, buf.length, 7331, rawStream.remoteAddress.replace('::ffff:', '')) // + does utp works with ipv6? ie. ::ffff:190.246.123.123:53546
     }
     peer.on('close', () => clearInterval(intervalId))
     // peer.on('close', () => process.exit())
@@ -76,6 +76,7 @@ async function setup () {
     })
 
     noisy.on('connected', function () {
+      console.log('noisy connected')
       pump(noisy, socket, noisy)
     })
   })
