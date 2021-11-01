@@ -15,6 +15,7 @@ const server = node.createServer({
 
 server.on('connection', function (peer) {
   console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort)
+  peer.on('error', console.error)
 })
 
 server.listen(serverKeyPair).then(() => console.log('server listening'))

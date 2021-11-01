@@ -7,9 +7,16 @@ const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992
 const node = new DHT({ keyPair: clientKeyPair })
 
 const peer = node.connect(serverKeyPair.publicKey)
+
 peer.on('open', function () {
   console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort)
 
-  const socket = net.connect(peer.rawStream.remotePort, peer.rawStream.remoteAddress)
-  socket.end('hey')
+  peer.on('error', console.error)
+
+  // const socket = net.connect(peer.rawStream.remotePort, peer.rawStream.remoteAddress)
+  // peer.write()
+  // socket.emit('error', new Error('random'))
+  // throw new Error('random')
+
+  process.exit()
 })
