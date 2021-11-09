@@ -262,7 +262,27 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
       console.log('peerInfo', peerInfo);
 
-      // let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+      let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+      setupRemote(remote);
+
+      function setupRemote (remote) {
+        remote.on('data', function (chunk) {
+          peer.write(chunk);
+        });
+        remote.on('close', function () {
+          remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
+          setupRemote(remote);
+        });
+      }
+
+      peer.on('data', function (chunk) {
+        remote.write(chunk);
+      });
+      peer.on('close', function () {
+        remote.end(function () {
+          remote.destroy();
+        });
+      });
       // mimic(peer, remote); // replicate peer actions to -> remote
       // mimic(remote, peer); // replicate remote actions to -> peer
     });
