@@ -263,31 +263,55 @@ function Remote ({ keyPair, remoteAddress, peers }) {
       console.log('peerInfo', peerInfo);
 
       let remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-      setupRemote(remote);
 
-      function setupRemote (remote) {
-        remote.on('data', function (chunk) {
-          peer.write(chunk);
-        });
-        remote.on('close', function () {
+      // remote -> peer
+      remote.on('data', onRemoteData);
+      remote.on('close', onRemoteClose);
+
+      function onRemoteData (chunk) {
+        if (peer.destroyed) {
+          remote.destroy();
+          return;
+        }
+
+        peer.write(chunk);
+      }
+      function onRemoteClose () {
+        remote.off('data', onRemoteData);
+        remote.off('close', onRemoteClose);
+        remote.destroy();
+      }
+
+      // peer -> remote
+      peer.on('data', onPeerData);
+      peer.on('close', onPeerClose);
+
+      function onPeerData (chunk) {
+        if (remote.destroyed) {
           remote = ConnectTCP(remoteAddress.address, remoteAddress.port);
-          setupRemote(remote);
+
+          remote.on('data', onRemoteData);
+          remote.on('close', onRemoteClose);
+        }
+
+        remote.write(chunk);
+      }
+      function onPeerClose () {
+        peer.off('data', onPeerData);
+        peer.off('close', onPeerClose);
+        peer.destroy();
+
+        const r = remote;
+        r.end(function () {
+          r.destroy();
         });
       }
 
-      peer.on('data', function (chunk) {
-        remote.write(chunk);
-      });
-      peer.on('close', function () {
-        remote.end(function () {
-          remote.destroy();
-        });
-      });
       // mimic(peer, remote); // replicate peer actions to -> remote
       // mimic(remote, peer); // replicate remote actions to -> peer
     });
 
-    const topic = Buffer.alloc(32).fill('hyperswarm-forward-2');
+    const topic = Buffer.alloc(32).fill('hyperswarm-forward-3');
     const discovery = swarm1.join(topic, { server: true, client: false });
     console.log('discovery joined');
     (async () => {
@@ -324,6 +348,49 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
         console.log('peer', peer.rawStream.remoteAddress + ':' + peer.rawStream.remotePort, '(' + peer.rawStream.remoteFamily + ')');
         console.log('peerInfo', peerInfo);
 
+        // local -> peer
+        local.on('data', onLocalData);
+        local.on('close', onLocalClose);
+
+        function onLocalData (chunk) {
+          if (peer.destroyed) {
+            local.destroy();
+            return;
+          }
+
+          peer.write(chunk);
+        }
+        function onLocalClose () {
+          local.off('data', onlocalData);
+          local.off('close', onLocalClose);
+          local.destroy();
+        }
+
+        // peer -> local
+        peer.on('data', onPeerData);
+        peer.on('close', onPeerClose);
+
+        function onPeerData (chunk) {
+          if (local.destroyed) {
+            local = ConnectTCP(remoteAddress.address, remoteAddress.port);
+
+            local.on('data', onLocalData);
+            local.on('close', onLocalClose);
+          }
+
+          local.write(chunk);
+        }
+        function onPeerClose () {
+          peer.off('data', onPeerData);
+          peer.off('close', onPeerClose);
+          peer.destroy();
+
+          const l = local;
+          l.end(function () {
+            l.destroy();
+          });
+        }
+
         // mimic(local, peer);
         // mimic(peer, local);
       });
@@ -331,7 +398,7 @@ function Local ({ remotePublicKey, localAddress, keyPair }) {
       // swarm.joinPeer(remotePublicKey);
       // swarm.leavePeer(remotePublicKey);
 
-      const topic = Buffer.alloc(32).fill('hyperswarm-forward-2');
+      const topic = Buffer.alloc(32).fill('hyperswarm-forward-3');
       swarm.join(topic, { server: false, client: true });
       console.log('discovery joined');
       (async () => {
