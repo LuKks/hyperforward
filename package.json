@@ -38,6 +38,7 @@
     "minimist": "^1.2.5",
     "node-fetch": "^2.6.5",
     "pump": "^3.0.0",
+    "simple-message-channels": "^1.2.1",
     "utp-native": "^2.5.3"
   }
 }
