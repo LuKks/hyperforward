@@ -29,7 +29,7 @@ async function setup () {
     console.log('Remote public key', socket.remotePublicKey)
     console.log('Local public key', socket.publicKey) // same as keyPair.publicKey
 
-    pump(socket, net.connect(2999, '127.0.0.1'), socket)
+    pump(socket, net.connect(1090, '127.0.0.1'), socket)
   })
 
   // const keyPair = DHT.keyPair()
