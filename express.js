@@ -3,6 +3,7 @@ const app = express()
 
 app.use(function (req, res, next) {
   console.log('req incoming')
+  req.connection.setTimeout(600 * 1000)
   next()
 })
 
