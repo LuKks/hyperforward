@@ -13,3 +13,4 @@ app.get('/', function (req, res) {
 const server = app.listen(2999, '0.0.0.0')
 
 server.keepAliveTimeout = 600 * 1000
+server.headersTimeout = 601 * 1000
