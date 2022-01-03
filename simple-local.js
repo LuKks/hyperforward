@@ -16,7 +16,7 @@ async function setup () {
   await node.ready()
 
   // local forward
-  const server = await bind.tcp(3001)
+  const server = await bind.tcp(1095)
 
   server.on('connection', function (socket) {
     pump(socket, node.connect(serverKeyPair.publicKey), socket)
