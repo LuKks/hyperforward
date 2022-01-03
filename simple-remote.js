@@ -6,14 +6,6 @@ const bind = require('bind-easy')
 const serverKeyPair = DHT.keyPair(Buffer.from('524ad00b147e1709e7fd99e2820f8258fd30ed043c631233ac35e17f9ec10333', 'hex'))
 const clientKeyPair = DHT.keyPair(Buffer.from('c7f7b6cc2cd1869a4b8628deb49efc992109c9fbdfa55ab1cfa528117fff9acd', 'hex'))
 
-/*
-n pending, readyState, connecting
-0 true open false
-1 true opening true
-2 false open false
-3 true closed false
-*/
-
 const node = new DHT({
   keyPair: serverKeyPair
 })
