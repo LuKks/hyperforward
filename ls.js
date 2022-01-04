@@ -45,7 +45,7 @@ for (let i = 0; i < publicKeys.length; i++) {
   }
 }
 
-if (!count) {
+if (!hasKnownPeers) {
   console.log('None')
 }
 
