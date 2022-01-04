@@ -26,7 +26,7 @@ hyperforward -L 127.0.0.1:8080 --connect 6e7c244099bf7c14314b0eb611...a1d80fed9c
 
 3) Now you can use the **local 127.0.0.1:8080** as it will be forwarded **to remote 127.0.0.1:3000**
 
-#### Authentication
+#### Authorization
 Create named key pair:
 ```bash
 hyperforward keygen lukks
