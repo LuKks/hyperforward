@@ -15,12 +15,12 @@ npm i -g hyperforward
 ```bash
 hyperforward remote 127.0.0.1:3000
 # Use this temporal public key to connect:
-# 6e7c244099bf7c14314b0eb611...a1d80fed9c5e22d52a0c0e927c
+# 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
 ```
 
 2) Other peers can connect to you using the public key:
 ```bash
-hyperforward local 127.0.0.1:8080 --connect 6e7c244099bf7c14314b0eb611...a1d80fed9c5e22d52a0c0e927c
+hyperforward local 127.0.0.1:8080 --connect 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
 # Ready to use, listening on: 127.0.0.1:8080
 ```
 
