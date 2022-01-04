@@ -56,6 +56,7 @@ hyperforward keygen [name]
 hyperforward add [name] [public_key]
 hyperforward print [name]
 hyperforward ls
+hyperforward rm [name]
 ```
 
 #### Sharing multiple services
