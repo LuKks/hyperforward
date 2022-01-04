@@ -8,7 +8,7 @@ const { maybeKeygen, parseAddressPort, parsePeers } = require('./util.js')
 // clean args // + windows: replace to keep only alphanumeric chars
 argv.key = (argv.key || '').trim()
 argv.R = (argv.R || '').trim()
-argv.allow = (argv.allow || '').trim()
+argv.firewall = (argv.firewall || '').trim()
 
 // parse and validate args
 const myKeyPair = maybeKeygen(argv.key)
@@ -17,8 +17,8 @@ const remote = parseAddressPort(argv.R)
 if (remote === -1) throw new Error('-R is invalid (address:port)')
 if (remote === -2) throw new Error('-R port range is invalid (1-65535)')
 
-const allowedPeers = parsePeers(argv.allow)
-if (allowedPeers === -1) throw new Error('--allow is required (*, names or public keys comma separated)')
+const allowedPeers = parsePeers(argv.firewall)
+if (allowedPeers === -1) throw new Error('--firewall is required (*, names or public keys comma separated)')
 
 // setup
 const node = new DHT({

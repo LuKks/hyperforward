@@ -13,7 +13,7 @@ npm i -g hyperforward
 #### Public connection
 1) Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
 ```bash
-hyperforward -R 127.0.0.1:3000 --allow *
+hyperforward -R 127.0.0.1:3000 --firewall *
 # Use this temporal public key to connect:
 # 6e7c244099bf7c14314b0eb611...a1d80fed9c5e22d52a0c0e927c
 ```
@@ -40,7 +40,7 @@ Same as the first example but with specific authorization.
 
 1) **lukks** shares the remote server **127.0.0.1:3000** allowing only **cristian**
 ```bash
-hyperforward --key lukks -R 127.0.0.1:3000 --allow cristian
+hyperforward --key lukks -R 127.0.0.1:3000 --firewall cristian
 ```
 
 2) **cristian** creates a local server **127.0.0.1:8080** to receive from **lukks**
@@ -50,7 +50,7 @@ hyperforward --key cristian -L 127.0.0.1:8080 --connect lukks
 
 ### More
 ```bash
-hyperforward --key [name] -R [ip:port] --allow [*, names or public keys comma separated]
+hyperforward --key [name] -R [ip:port] --firewall [*, names or public keys comma separated]
 hyperforward --key [name] -L [ip:port] --connect [name or public key]
 hyperforward keygen [name]
 hyperforward add [name] [public_key]
@@ -77,9 +77,9 @@ hyperforward keygen proxy-1
 
 _In this case, only certain keys should be able to use the private VNC service._
 ```bash
-hyperforward --key http-1 -R 127.0.0.1:3000 --allow *
-hyperforward --key vnc-1 -R 127.0.0.1:4001 --allow cristian,lukks
-hyperforward --key proxy-1 -R 127.0.0.1:1090 --allow *
+hyperforward --key http-1 -R 127.0.0.1:3000 --firewall *
+hyperforward --key vnc-1 -R 127.0.0.1:4001 --firewall cristian,lukks
+hyperforward --key proxy-1 -R 127.0.0.1:1090 --firewall *
 ```
 
 3) **Other peers can connect to your services:**
