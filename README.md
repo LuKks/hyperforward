@@ -36,7 +36,7 @@ hyperforward keygen cristian
 ```
 
 #### Private connection
-Same as the first example but with specific authentication.
+Same as the first example but with specific authorization.
 
 1) **lukks** shares the remote server **127.0.0.1:3000** allowing only **cristian**
 ```bash
