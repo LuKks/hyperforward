@@ -9,4 +9,8 @@ if (argv.R && argv.allow) {
   command = 'local'
 }
 
-require('./' + command + '.js')
+try {
+  require('./' + command + '.js')
+} catch (error) {
+  console.error('Error:', error.message)
+}
