@@ -1,26 +1,28 @@
-const fs = require('fs');
-const argv = require('minimist')(process.argv.slice(2));
-const homedir = require('os').homedir();
+const fs = require('fs')
+const os = require('os')
+const argv = require('minimist')(process.argv.slice(2))
 
-let name = (argv._[1] || '').trim();
+const name = (argv._[1] || '').trim()
 if (!name.length) {
-  throw new Error('Name is required');
+  throw new Error('Name is required')
 }
 if (name.length > 21) {
-  throw new Error('Name max length must be 21');
+  throw new Error('Name max length must be 21')
 }
 
-if (fs.existsSync(homedir + '/.ssh/noise_' + name)) {
-  throw new Error('Can\'t add or change a public key already paired with a secret key (' + homedir + '/.ssh/noise_' + name + ')');
+const path = os.homedir() + '/.hyperforward/'
+
+if (fs.existsSync(path + name)) {
+  throw new Error('Can\'t add or change a public key already paired with a secret key (' + path + name + ')')
 }
 
-let publicKey = (argv._[2] || '').trim();
+const publicKey = (argv._[2] || '').trim()
 if (publicKey.length !== 64) {
-  throw new Error('The public key must be 64 length of hex');
+  throw new Error('The public key must be 64 length of hex')
 }
 
-let alreadyExisted = fs.existsSync(homedir + '/.ssh/noise_' + name + '.pub');
-fs.writeFileSync(homedir + '/.ssh/noise_' + name + '.pub', publicKey + '\n', 'utf8');
+const alreadyExists = fs.existsSync(path + name + '.pub')
+fs.writeFileSync(path + name + '.pub', publicKey + '\n', 'utf8')
 
-console.log('The ' + (alreadyExisted ? 'new' : '') + 'public key is named:');
-console.log('[' + name + '] (' + publicKey + ')');
+console.log('The ' + (alreadyExists ? 'new' : '') + 'public key is named:')
+console.log('[' + name + '] (' + publicKey + ')')

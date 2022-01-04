@@ -1,48 +1,59 @@
-const { parsePeers, parseAddressPort, mimic, onstatickey, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs } = require('./util.js');
-const { Listen, Remote, Connect, Local } = require('./index.js');
-const argv = require('minimist')(process.argv.slice(2));
-const homedir = require('os').homedir();
+const DHT = require('@hyperswarm/dht')
+const net = require('net')
+const pump = require('pump')
+const bind = require('bind-easy')
+const argv = require('minimist')(process.argv.slice(2))
+const { maybeKeygen, parseAddressPort, parsePeers } = require('./util.js')
 
-// clean args
-argv.from = (argv.from || '').trim();
-argv.peers = (argv.peers || '').trim();
-argv.R = (argv.R || '').trim();
-argv.D = (argv.D || '').trim();
-
-// states
-let isDynamic = !argv.R && argv.D && argv.peers;
-let isRandom = !argv.from;
+// clean args // + windows: replace to keep only alphanumeric chars
+argv.key = (argv.key || '').trim()
+argv.R = (argv.R || '').trim()
+argv.allow = (argv.allow || '').trim()
 
 // parse and validate args
-argv.from = maybeKeygen(argv.from);
+const myKeyPair = maybeKeygen(argv.key)
 
-argv.R = parseAddressPort(argv.R);
-if (argv.R === 1) throw new Error('-R is invalid (address:port)');
-if (argv.R === 2) throw new Error('-R port range is invalid (1-65535)');
+const remote = parseAddressPort(argv.R)
+if (remote === -1) throw new Error('-R is invalid (address:port)')
+if (remote === -2) throw new Error('-R port range is invalid (1-65535)')
 
-argv.peers = parsePeers(argv.peers);
-if (argv.peers === 1) throw new Error('--peers is required (name or public key, comma separated)');
+const allowedPeers = parsePeers(argv.allow)
+if (allowedPeers === -1) throw new Error('--allow is required (*, names or public keys comma separated)')
 
-// + maybe start a lookup for Client in case it already exists to connect even faster
+// setup
+const node = new DHT({
+  keyPair: myKeyPair
+})
 
-(async () => {
-  const server = await Remote({
-    keyPair: argv.from,
-    remoteAddress: argv.R,
-    peers: argv.peers
-  });
+main()
 
-  console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
-  console.log(argv.from.publicKey.toString('hex'));
+async function main () {
+  // await node.ready()
 
-  let serverAddress = server.address();
-  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  const server = node.createServer({
+    firewall (remotePublicKey, remoteHandshakePayload) {
+      for (const publicKey of allowedPeers) {
+        if (publicKey === '*' || remotePublicKey.equals(publicKey)) {
+          return false
+        }
+      }
+      return true
+    }
+  })
 
-  // handle graceful exit
-  process.once('SIGINT', function () {
-    console.log(Date.now(), 'SIGINT');
-    serverClose(server, { isNoise: false, timeoutForceExit: 1000 }); // isNoise changed to false
-  });
-})();
+  server.on('connection', function (socket) {
+    pump(socket, net.connect(remote.port, remote.address), socket)
+  })
 
-// + what happens if Remote lost internet? --reconnect
+  await server.listen(myKeyPair)
+
+  console.log('Use this ' + (!argv.key ? 'temporal ' : '') + 'public key to connect:')
+  console.log(myKeyPair.publicKey.toString('hex'))
+  // console.log('Listening on:', server.address().address + ':' + server.address().port)
+}
+
+process.once('SIGINT', function () {
+  node.destroy().then(function () {
+    process.exit()
+  })
+})

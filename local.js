@@ -1,48 +1,46 @@
-const { parsePeers, parseAddressPort, mimic, onstatickey, maybeKeygen, endAfterServerClose, serverClose, addNoiseLogs } = require('./util.js');
-const { Listen, Remote, Connect, Local } = require('./index.js');
-const argv = require('minimist')(process.argv.slice(2));
-const homedir = require('os').homedir();
+const DHT = require('@hyperswarm/dht')
+const net = require('net')
+const pump = require('pump')
+const bind = require('bind-easy')
+const argv = require('minimist')(process.argv.slice(2))
+const { maybeKeygen, parseAddressPort, parsePeers } = require('./util.js')
 
-// clean args
-argv.from = (argv.from || '').trim();
-argv.connect = (argv.connect || '').trim();
-argv.L = (argv.L || '').trim();
-argv.D = (argv.D || '').trim();
-
-// states
-let isDynamic = !argv.L && argv.D && argv.connect;
-let isRandom = !argv.from;
+// clean args // + windows: replace to keep only alphanumeric chars
+argv.key = (argv.key || '').trim()
+argv.L = (argv.L || '').trim()
+argv.connect = (argv.connect || '').trim()
 
 // parse and validate args
-argv.from = maybeKeygen(argv.from);
+const myKeyPair = maybeKeygen(argv.key)
 
-argv.L = parseAddressPort(argv.L);
-if (argv.L === 1) throw new Error('-L is invalid (address:port)');
-if (argv.L === 2) throw new Error('-L port range is invalid (1-65535)');
+const local = parseAddressPort(argv.L)
+if (local === -1) throw new Error('-L is invalid (address:port)')
+if (local === -2) throw new Error('-L port range is invalid (1-65535)')
 
-argv.connect = parsePeers(argv.connect);
-if (argv.connect === 1) throw new Error('--connect is required (name or public key, comma separated)');
+const serverPublicKey = parsePeers(argv.connect)
+if (serverPublicKey === -1) throw new Error('--connect is required (name or public key, comma separated)')
 
-// + maybe start a lookup for Remote in case it doesn't exists alert the user
+// setup
+const node = new DHT({
+  keyPair: myKeyPair
+})
 
-(async () => {
-  const server = await Local({
-    remotePublicKey: argv.connect[0],
-    localAddress: argv.L,
-    keyPair: argv.from
-  });
+main()
 
-  console.log('The ' + (isRandom ? 'temporal ' : '') + 'public key is:');
-  console.log(argv.from.publicKey.toString('hex'));
+async function main () {
+  // await node.ready()
 
-  let serverAddress = server.address();
-  console.log('Listening on:', serverAddress.address + ':' + serverAddress.port);
+  const server = await bind.tcp(local.port)
 
-  // handle graceful exit
-  process.once('SIGINT', function () {
-    console.log(Date.now(), 'SIGINT');
-    serverClose(server, { isNoise: false, timeoutForceExit: 1000 });
-  });
-})();
+  server.on('connection', function (socket) {
+    pump(socket, node.connect(serverPublicKey[0]), socket)
+  })
 
-// + what happens if Local lost internet?--reconnect
+  console.log('Ready to use, listening on:', server.address().address + ':' + server.address().port)
+}
+
+process.once('SIGINT', function () {
+  node.destroy().then(function () {
+    process.exit()
+  })
+})

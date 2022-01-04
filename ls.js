@@ -1,50 +1,50 @@
-const fs = require('fs');
-const argv = require('minimist')(process.argv.slice(2));
-const homedir = require('os').homedir();
+const fs = require('fs')
+const os = require('os')
+const argv = require('minimist')(process.argv.slice(2))
 
-let files = getFiles(homedir + '/.ssh/');
-let publicKeys = files.filter(file => file.startsWith('noise_') && file.endsWith('.pub'));
-let secretKeys = files.filter(file => file.startsWith('noise_') && !file.endsWith('.pub'));
+const files = getFiles(os.homedir() + '/.hyperforward/')
+const publicKeys = files.filter(file => file.endsWith('.pub')).map(publicKey => publicKey.substring(0, publicKey.length - 4))
+const secretKeys = files.filter(file => !file.endsWith('.pub'))
 
-console.log('My pair keys:');
-let myPairKeys = false;
-for (let i = 0, count = 0; i < publicKeys.length; i++) {
-  let publicKey = publicKeys[i];
-  let name = publicKey.substring(6, publicKey.length - 4);
-  let secretKey = publicKey.substring(0, publicKey.length - 4);
-  let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
-  if (hasSecretKey) {
-    myPairKeys = true;
-    count++;
-    let hex = fs.readFileSync(homedir + '/.ssh/noise_' + name + '.pub', 'utf8').trim();
-    console.log(count + ')', name, hex);
-  }
+// my pair keys (keys with private key)
+console.log('My pair keys:')
+
+for (let i = 0; i < secretKeys.length; i++) {
+  const path = os.homedir() + '/.hyperforward/'
+  const name = secretKeys[i]
+  const publicKey = fs.readFileSync(path + name + '.pub', 'utf8').trim()
+  console.log((i + 1) + ')', name, publicKey)
 }
-if (!myPairKeys) {
-  console.log('None');
-}
-console.log();
 
-console.log('Known peers:');
-let knownPeers = false;
-for (let i = 0, count = 0; i < publicKeys.length; i++) {
-  let publicKey = publicKeys[i];
-  let name = publicKey.substring(6, publicKey.length - 4);
-  let secretKey = publicKey.substring(0, publicKey.length - 4);
-  let hasSecretKey = secretKeys.indexOf(secretKey) > -1;
+if (!secretKeys.length) {
+  console.log('None')
+}
+
+console.log()
+
+// known peers (keys without private key)
+console.log('Known peers:')
+let hasKnownPeers = false
+
+for (let i = 0; i < publicKeys.length; i++) {
+  const path = os.homedir() + '/.hyperforward/'
+  const name = publicKeys[i]
+  const hasSecretKey = secretKeys.indexOf(name) > -1
+
   if (!hasSecretKey) {
-    knownPeers = true;
-    count++;
-    let knownPublicKey = fs.readFileSync(homedir + '/.ssh/noise_' + name + '.pub', 'utf8').trim();
-    console.log(count + ')', name, knownPublicKey/*filename that holds the public key*/);
+    hasKnownPeers = true
+
+    const publicKey = fs.readFileSync(path + name + '.pub', 'utf8').trim()
+    console.log((i + 1) + ')', name, publicKey)
   }
 }
-if (!knownPeers) {
-  console.log('None');
+
+if (!count) {
+  console.log('None')
 }
 
 function getFiles (source) {
   return fs.readdirSync(source, { withFileTypes: true })
     .filter(dirent => !dirent.isDirectory())
-    .map(dirent => dirent.name);
+    .map(dirent => dirent.name)
 }
