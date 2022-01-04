@@ -12,6 +12,10 @@ if (name.length > 21) {
 
 const path = os.homedir() + '/.hyperforward/'
 
+if (!fs.existsSync(path)) {
+  fs.mkdirSync(path, { recursive: true });
+}
+
 if (fs.existsSync(path + name)) {
   throw new Error('Can\'t add or change a public key already paired with a secret key (' + path + name + ')')
 }

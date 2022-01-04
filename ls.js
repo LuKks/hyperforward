@@ -2,6 +2,12 @@ const fs = require('fs')
 const os = require('os')
 const argv = require('minimist')(process.argv.slice(2))
 
+const path = os.homedir() + '/.hyperforward/'
+
+if (!fs.existsSync(path)) {
+  fs.mkdirSync(path, { recursive: true });
+}
+
 const files = getFiles(os.homedir() + '/.hyperforward/')
 const publicKeys = files.filter(file => file.endsWith('.pub')).map(publicKey => publicKey.substring(0, publicKey.length - 4))
 const secretKeys = files.filter(file => !file.endsWith('.pub'))

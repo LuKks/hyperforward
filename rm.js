@@ -12,6 +12,10 @@ if (name.length > 21) {
 
 const path = os.homedir() + '/.hyperforward/'
 
+if (!fs.existsSync(path)) {
+  fs.mkdirSync(path, { recursive: true });
+}
+
 let existsPublicKey = fs.existsSync(path + name + '.pub')
 let existsSecretKey = fs.existsSync(path + name)
 if (!existsPublicKey && !existsSecretKey) {
