@@ -10,15 +10,14 @@ npm i -g hyperforward
 ```
 
 ### Examples
-#### Public connection
-1) Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
+Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
 ```bash
 hyperforward remote 127.0.0.1:3000
 # Use this temporal public key to connect:
 # 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
 ```
 
-2) Other peers can connect to you using the public key:
+Other peers can connect to you using the public key:
 ```bash
 hyperforward local 127.0.0.1:8080 --connect 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
 # Ready to use, listening on: 127.0.0.1:8080
