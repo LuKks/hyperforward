@@ -12,8 +12,8 @@ const files = getFiles(os.homedir() + '/.hyperforward/')
 const publicKeys = files.filter(file => file.endsWith('.pub')).map(publicKey => publicKey.substring(0, publicKey.length - 4))
 const secretKeys = files.filter(file => !file.endsWith('.pub'))
 
-// my pair keys (keys with private key)
-console.log('My pair keys:')
+// my key pairs (keys with private key)
+console.log('My key pairs:')
 
 for (let i = 0; i < secretKeys.length; i++) {
   const path = os.homedir() + '/.hyperforward/'

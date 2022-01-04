@@ -19,7 +19,7 @@ if (!fs.existsSync(path)) {
 let existsPublicKey = fs.existsSync(path + name + '.pub')
 let existsSecretKey = fs.existsSync(path + name)
 if (!existsPublicKey && !existsSecretKey) {
-  throw new Error('The pair keys not exists (' + path + name + ' and .pub)')
+  throw new Error('The key pair not exists (' + path + name + ' and .pub)')
 }
 
 if (existsPublicKey) {
