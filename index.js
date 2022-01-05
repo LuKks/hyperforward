@@ -238,7 +238,7 @@ Hyperforward.prototype.local = async function (myKeyPair, localAddress, serverPu
   const server = await bind.tcp(localAddress.port, { address: localAddress.address, allowAny: false })
 
   server.on('connection', function (socket) {
-    pump(socket, node.connect(serverPublicKey[0]), socket)
+    pump(socket, node.connect(Buffer.from(serverPublicKey[0], 'hex')), socket)
   })
 
   return { node, server }
