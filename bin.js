@@ -106,7 +106,7 @@ if (command === 'remote') {
   if (remoteAddress === -1) throw new Error('Remote value is invalid (address:port)')
   if (remoteAddress === -2) throw new Error('Remote port range is invalid (1-65535)')
 
-  const allowedPeers = parsePeers(argv.firewall)
+  let allowedPeers = parsePeers(argv.firewall)
   if (allowedPeers === -1) {
     // throw new Error('--firewall is required (*, names or public keys comma separated)')
     allowedPeers = ['*']
