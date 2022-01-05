@@ -16,6 +16,8 @@ const prompt = require('./like-prompt.js')
 // + avoid checking so much?
 // + organization using a "bin" and "lib" folder?
 
+// seed: Buffer.alloc(32).fill('aa')
+
 function Hyperforward () {
   if (!(this instanceof Hyperforward)) {
     return new Hyperforward()
@@ -218,10 +220,10 @@ Hyperforward.prototype.remote = async function (keyPair, remoteAddress, allowedP
   return { node, server }
 }
 
-Hyperforward.prototype.local = async function (myKeyPair, localAddress, serverPublicKey) {
+Hyperforward.prototype.local = async function (keyPair, localAddress, serverPublicKey) {
   // start node
   const node = new DHT({
-    keyPair: myKeyPair
+    keyPair
   })
 
   // handle ctrl+c
