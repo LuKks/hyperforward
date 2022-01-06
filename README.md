@@ -1,6 +1,6 @@
 # hyperforward
 
-Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)
+Forward P2P E2E encrypted
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
@@ -9,152 +9,90 @@ Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)
 npm i -g hyperforward
 ```
 
-Public connection:
+### Examples
+#### Public connection
+Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
 ```bash
-# server: listen remote forward
-hyperforward -R 127.0.0.1:3000 --clients *
-# The temporal public key is:
-# 6e7c244099bf7c14314b0eb611c6bff9b040bca1d80fed9c5e22d52a0c0e927c
-# Listening on: 127.0.0.1:48305
-
-# client: connect local forward
-hyperforward -L 127.0.0.1:3000 --connect 6e7c244099bf7c14314b0eb611c6bff9b040bca1d80fed9c5e22d52a0c0e927c
-# The temporal public key is:
-# 9dde1ccf27c95680b4bead02598897ce31cd5dbca256d3a154033ad398f38d63
-# Listening on: 127.0.0.1:3000
+hyperforward remote 127.0.0.1:3000
+# Use this temporal public key to connect:
+# 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
 ```
 
-Authentication:
+Other peers can connect to you using the public key:
 ```bash
-# create your pair keys:
-hyperforward keygen lks
-
-# ask a friend to create their pair keys:
-# hyperforward keygen crst
-
-# for easy usage, save your friend's public key with a custom name:
-hyperforward add crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
-
-# ask your friend to do the same with your public key:
-# hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
+hyperforward local 127.0.0.1:8080 --connect 6e7c244099bf7c14314b0e...0fed9c5e22d52a0c0e927c
+# Ready to use, listening on: 127.0.0.1:8080
 ```
 
-Private connection:
-```bash
-# server: you listen remote forward
-hyperforward --from lks -R 127.0.0.1:3000 --clients crst
+Now you can use the **local 127.0.0.1:8080** as it will be forwarded **to remote 127.0.0.1:3000**
 
-# client: friend connect local forward
-hyperforward --from crst -L 127.0.0.1:3000 --connect lks
+#### Authorization
+Create named key pair:
+```bash
+hyperforward keygen lukks
+
+# Ask a friend to create their key pair:
+hyperforward keygen cristian
 ```
 
-## Examples
-#### Generate a public/secret noise key pair
+#### Private connection
+Same as the first example but with specific authorization.
+
+1) **lukks** shares the remote server **127.0.0.1:3000** allowing only **cristian**
 ```bash
-# use: hyperforward keygen [name]
-
-# on lks's computer
-hyperforward keygen lks
-# Generating public/secret noise key pair.
-# Your identification has been saved in /home/lucas/.ssh/noise_lks
-# Your public key has been saved in /home/lucas/.ssh/noise_lks.pub
-# The public key is:
-# dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
-
-# on crst's computer
-hyperforward keygen crst
-# Generating public/secret noise key pair.
-# ...
-# The public key is:
-# 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
+hyperforward remote 127.0.0.1:3000 --key lukks --firewall cristian
 ```
 
-#### Add to known peers
+2) **cristian** creates a local server **127.0.0.1:8080** to receive from **lukks**
 ```bash
-# use: hyperforward add [name] [public_key]
-
-# on lks's computer
-hyperforward add crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
-# The public key is named:
-# [crst] (7fb3...b57f)
-
-# on crst's computer
-hyperforward add lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
-# The public key is named:
-# [lks] (dce0...e555)
+hyperforward local 127.0.0.1:8080 --key cristian --connect lukks
 ```
 
-#### Listen remote forward (server)
+### More
 ```bash
-# use: hyperforward --from [public_key] -R [remote_address:port] --clients [asterisk or list of names or public keys]
-
-hyperforward --from lks -R 127.0.0.1:3000 --clients crst
-# --clients: only names or public keys (comma separated) are allowed to connect
-```
-
-#### Connect local forward (client)
-```bash
-# use: hyperforward --from [public_key] -L [local_address:port] --connect [public_key]
-
-hyperforward --from crst -L 127.0.0.1:3000 --connect lks
-# --connect: only --clients specified in remote (-R) can connect
-```
-
-#### Print the public key
-```bash
-# use: hyperforward print [name]
-
-hyperforward print lks
-# The public key is:
-# dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
-```
-
-#### List keys
-```bash
-# use: hyperforward ls
-
+hyperforward remote [ip:port] --key [name] --firewall [names or public keys comma separated]
+hyperforward local [ip:port] --key [name] --connect [name or public key]
+hyperforward keygen [name]
+hyperforward add [name] [public_key]
+hyperforward print [name]
 hyperforward ls
-# My pair keys:
-# 1) lks dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
-
-# Known peers:
-# 1) crst 7fb38687efe15b9280fef1dc5d84d87c618a0cf1041bfbe3f33c115a30b0b57f
+hyperforward rm [name]
 ```
 
-#### Remove public key and pair key
+#### Sharing multiple services
+Let's say you have multiple things going on:
+
+- **HTTP server** on: **127.0.0.1:3000**
+- **VNC/NoMachine** on: **127.0.0.1:4001**
+- **SOCKS5 proxy** on: **127.0.0.1:1090**
+
+1) **Each service should have their own key pair:**
+
 ```bash
-# use: hyperforward rm [name]
-
-hyperforward rm lks
-# Public key is now deleted: /home/lucas/.ssh/noise_lks.pub
-# Secret key is now deleted: /home/lucas/.ssh/noise_lks
-
-hyperforward rm crst
-# Public key is now deleted: /home/lucas/.ssh/noise_crst.pub
+hyperforward keygen http-1
+hyperforward keygen vnc-1
+hyperforward keygen proxy-1
 ```
 
-#### Temporal server authentication
-Don't set `--from` in `-R` (will keygen a temporal pair keys in memory)
-```bash
-# server:
-hyperforward -R 127.0.0.1:3000 --clients crst
-# Temporal listening on:
-# 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+2) **Normal remote forward each one:**
 
-# example client connection:
-hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+_In this case, only certain keys should be able to use the private VNC service._
+```bash
+hyperforward remote 127.0.0.1:3000 --key http-1
+hyperforward remote 127.0.0.1:4001 --key vnc-1 --firewall cristian,lukks
+hyperforward remote 127.0.0.1:1090 --key proxy-1
 ```
 
-#### Temporal client authentication
-Don't set `--from` in `-L` (will keygen a temporal pair keys in memory)
-```bash
-# example server listen:
-hyperforward --from lks -R 127.0.0.1:3000 --clients crst
-# Listening on:
-# dce09d024d0df44c551b3d2478a5b0f987983a94bb35ba9ea85bfebb5169e555
+3) **Other peers can connect to your services:**
 
-# client:
-hyperforward --from crst -L 127.0.0.1:3000 --connect 3ce750bd562d6c1b4702153da15af742bd7602575ee30a14fc1556b83fa3ea29
+Let's say "lukks" would like to use your VNC (as he's authorized):
+```bash
+hyperforward local 127.0.0.1:4001 --key lukks --connect vnc-1
+```
+
+Later, anyone would like to use your proxy:
+```bash
+hyperforward local 127.0.0.1:1090 --connect proxy-1
 ```
 
 ## License

@@ -1,13 +1,13 @@
 {
   "name": "hyperforward",
   "version": "0.4.8",
-  "description": "Forward P2P E2E encrypted (Hyperswarm/discovery + Noise Protocol)",
+  "description": "Forward P2P E2E encrypted",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard"
   },
   "bin": {
-    "hyperforward": "./index.js"
+    "hyperforward": "./bin.js"
   },
   "repository": {
     "type": "git",
@@ -27,10 +27,16 @@
     "encrypted",
     "discovery",
     "noise",
-    "hyperswarm"
+    "hyperswarm",
+    "dht"
   ],
   "dependencies": {
+    "@hyperswarm/dht": "^5.0.12",
+    "bind-easy": "^1.1.0",
     "minimist": "^1.2.5",
-    "noise-network": "github:LuKks/noise-network"
+    "pump": "^3.0.0"
+  },
+  "devDependencies": {
+    "standard": "^16.0.4"
   }
 }
