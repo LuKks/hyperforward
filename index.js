@@ -204,10 +204,10 @@ Hyperforward.prototype.remote = async function (keyPair, remoteAddress, allowedP
     firewall (remotePublicKey, remoteHandshakePayload) {
       for (const publicKey of allowedPeers) {
         if (publicKey === '*' || remotePublicKey.equals(publicKey)) {
-          return true
+          return false
         }
       }
-      return false
+      return true
     }
   })
 
