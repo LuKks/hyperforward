@@ -10,6 +10,7 @@ npm i -g hyperforward
 ```
 
 ### Examples
+#### Public connection
 Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
 ```bash
 hyperforward remote 127.0.0.1:3000
