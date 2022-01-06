@@ -21,8 +21,8 @@ function maybeKeygen (name) {
   }
 
   return {
-    publicKey: Buffer.from(fs.readFileSync(HYPERFORWARD_PATH + name + '.pub', 'utf8').trim(), 'hex'),
-    secretKey: Buffer.from(fs.readFileSync(HYPERFORWARD_PATH + name, 'utf8').trim(), 'hex')
+    publicKey: Buffer.from(fs.readFileSync(path.join(HYPERFORWARD_PATH, name + '.pub'), 'utf8').trim(), 'hex'),
+    secretKey: Buffer.from(fs.readFileSync(path.join(HYPERFORWARD_PATH, name), 'utf8').trim(), 'hex')
   }
 }
 
@@ -55,7 +55,7 @@ function parsePeers (names) {
       fs.mkdirSync(HYPERFORWARD_PATH, { recursive: true })
     }
 
-    const publicKey = fs.readFileSync(HYPERFORWARD_PATH + name + '.pub', 'utf8')
+    const publicKey = fs.readFileSync(path.join(HYPERFORWARD_PATH, name + '.pub'), 'utf8')
     return Buffer.from(publicKey.trim(), 'hex')
   })
 
