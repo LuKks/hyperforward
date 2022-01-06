@@ -10,6 +10,7 @@ const os = require('os')
 const net = require('net')
 const pump = require('pump')
 const bind = require('bind-easy')
+const path = require('path')
 
 // + fs promises
 // + avoid checking so much?
@@ -22,7 +23,7 @@ function Hyperforward () {
     return new Hyperforward()
   }
 
-  this.path = os.homedir() + '/.hyperforward/'
+  this.path = path.join(os.homedir(), '.hyperforward')
 
   // ensure base folder exists
   if (!fs.existsSync(this.path)) {
@@ -40,11 +41,11 @@ Hyperforward.prototype.keygen = function (name) {
   }
 
   // avoid overwrite
-  if (fs.existsSync(this.path + name + '.pub')) {
-    throw new Error('The public key already exists (' + this.path + name + '.pub)')
+  if (fs.existsSync(path.join(this.path, name + '.pub'))) {
+    throw new Error('The public key already exists (' + path.join(this.path, name) +  '.pub)')
   }
-  if (fs.existsSync(this.path + name)) {
-    throw new Error('The secret key already exists (' + this.path + name + ')')
+  if (fs.existsSync(path.join(this.path, name))) {
+    throw new Error('The secret key already exists (' + path.join(this.path, name) + ')')
   }
 
   // generate
@@ -53,8 +54,8 @@ Hyperforward.prototype.keygen = function (name) {
   const publicKey = keyPair.publicKey.toString('hex')
 
   // save
-  fs.writeFileSync(this.path + name, secretKey + '\n')
-  fs.writeFileSync(this.path + name + '.pub', publicKey + '\n')
+  fs.writeFileSync(path.join(this.path, name), secretKey + '\n')
+  fs.writeFileSync(path.join(this.path, name + '.pub') , publicKey + '\n')
 
   // + should use "seed" to easily avoid two files, etc
 
@@ -74,12 +75,12 @@ Hyperforward.prototype.add = function (name, publicKey) {
   }
 
   // avoid overwrite conflict
-  if (fs.existsSync(this.path + name)) {
-    throw new Error('Can\'t add or change a public key already paired with a secret key (' + this.path + name + ')')
+  if (fs.existsSync(path.join(this.path, name))) {
+    throw new Error('Can\'t add or change a public key already paired with a secret key (' + path.join(this.path, name) + ')')
   }
 
   // save
-  fs.writeFileSync(this.path + name + '.pub', publicKey + '\n', 'utf8')
+  fs.writeFileSync(path.join(this.path, name + '.pub'), publicKey + '\n', 'utf8')
 }
 
 Hyperforward.prototype.print = function (name) {
@@ -92,13 +93,13 @@ Hyperforward.prototype.print = function (name) {
   }
 
   // check if not exists
-  if (!fs.existsSync(this.path + name + '.pub')) {
+  if (!fs.existsSync(path.join(this.path, name + '.pub'))) {
     // throw new Error('The public key not exists (' + this.path + name + '.pub)')
     return null
   }
 
   // check saved format
-  const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
+  const publicKey = fs.readFileSync(path.join(this.path, name + '.pub'), 'utf8').trim()
   if (publicKey.length !== 64) {
     throw new Error('The public key should be 64 length of hex but it is ' + publicKey.length)
   }
@@ -116,7 +117,7 @@ Hyperforward.prototype.ls = function () {
 
   for (let i = 0; i < secretKeys.length; i++) {
     const name = secretKeys[i]
-    const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
+    const publicKey = fs.readFileSync(path.join(this.path, name + '.pub'), 'utf8').trim()
     myKeyPairs.push({ name, publicKey })
   }
 
@@ -128,7 +129,7 @@ Hyperforward.prototype.ls = function () {
     const hasSecretKey = secretKeys.indexOf(name) > -1
 
     if (!hasSecretKey) {
-      const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
+      const publicKey = fs.readFileSync(path.join(this.path, name + '.pub'), 'utf8').trim()
       knownPeers.push({ name, publicKey })
     }
   }
@@ -152,8 +153,8 @@ Hyperforward.prototype.rm = function (name) {
   }
 
   // not exists?
-  const existsPublicKey = fs.existsSync(this.path + name + '.pub')
-  const existsSecretKey = fs.existsSync(this.path + name)
+  const existsPublicKey = fs.existsSync(path.join(this.path, name + '.pub'))
+  const existsSecretKey = fs.existsSync(path.join(this.path, name))
   if (!existsPublicKey && !existsSecretKey) {
     // throw new Error('The key pair not exists (' + this.path + name + ' and .pub)')
     return { deleted: false, existsPublicKey, existsSecretKey }
@@ -162,7 +163,7 @@ Hyperforward.prototype.rm = function (name) {
   // delete public key in case it exists
   if (existsPublicKey) {
     try {
-      fs.unlinkSync(this.path + name + '.pub')
+      fs.unlinkSync(path.join(this.path, name + '.pub'))
     } catch (error) {
       throw error
     }
@@ -171,7 +172,7 @@ Hyperforward.prototype.rm = function (name) {
   // delete secret key in case it exists
   if (existsSecretKey) {
     try {
-      fs.unlinkSync(this.path + name)
+      fs.unlinkSync(path.join(this.path, name))
     } catch (error) {
       throw error
     }
