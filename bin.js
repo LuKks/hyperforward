@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const hyperforward = require('./index.js')
-const prompt = require('./like-prompt.js')
 const fs = require('fs')
 const { maybeKeygen, parseAddressPort, parsePeers } = require('./util.js')
 const argv = require('minimist')(process.argv.slice(2))
