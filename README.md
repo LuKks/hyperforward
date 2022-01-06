@@ -76,7 +76,7 @@ hyperforward keygen proxy-1
 
 2) **Normal remote forward each one:**
 
-_In this case, only certain keys should be able to use the private VNC service._
+_In this case, only certain people should be able to use the private VNC service._
 ```bash
 hyperforward remote 127.0.0.1:3000 --key http-1
 hyperforward remote 127.0.0.1:4001 --key vnc-1 --firewall cristian,lukks
