@@ -1,6 +1,7 @@
 const DHT = require('@hyperswarm/dht')
 const fs = require('fs')
 const os = require('os')
+const path = require('path')
 
 module.exports = {
   maybeKeygen,
@@ -8,20 +9,20 @@ module.exports = {
   parsePeers
 }
 
+const HYPERFORWARD_PATH = path.join(os.homedir(), '.hyperforward')
+
 function maybeKeygen (name) {
   if (!name) {
     return DHT.keyPair()
   }
 
-  const path = os.homedir() + '/.hyperforward/'
-
-  if (!fs.existsSync(path)) {
-    fs.mkdirSync(path, { recursive: true })
+  if (!fs.existsSync(HYPERFORWARD_PATH)) {
+    fs.mkdirSync(HYPERFORWARD_PATH, { recursive: true })
   }
 
   return {
-    publicKey: Buffer.from(fs.readFileSync(path + name + '.pub', 'utf8').trim(), 'hex'),
-    secretKey: Buffer.from(fs.readFileSync(path + name, 'utf8').trim(), 'hex')
+    publicKey: Buffer.from(fs.readFileSync(HYPERFORWARD_PATH + name + '.pub', 'utf8').trim(), 'hex'),
+    secretKey: Buffer.from(fs.readFileSync(HYPERFORWARD_PATH + name, 'utf8').trim(), 'hex')
   }
 }
 
@@ -50,13 +51,11 @@ function parsePeers (names) {
       return name
     }
 
-    const path = os.homedir() + '/.hyperforward/'
-
-    if (!fs.existsSync(path)) {
-      fs.mkdirSync(path, { recursive: true })
+    if (!fs.existsSync(HYPERFORWARD_PATH)) {
+      fs.mkdirSync(HYPERFORWARD_PATH, { recursive: true })
     }
 
-    const publicKey = fs.readFileSync(path + name + '.pub', 'utf8')
+    const publicKey = fs.readFileSync(HYPERFORWARD_PATH + name + '.pub', 'utf8')
     return Buffer.from(publicKey.trim(), 'hex')
   })
 
