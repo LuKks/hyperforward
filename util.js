@@ -16,7 +16,7 @@ function maybeKeygen (name) {
   const path = os.homedir() + '/.hyperforward/'
 
   if (!fs.existsSync(path)) {
-    fs.mkdirSync(path, { recursive: true });
+    fs.mkdirSync(path, { recursive: true })
   }
 
   return {
@@ -53,7 +53,7 @@ function parsePeers (names) {
     const path = os.homedir() + '/.hyperforward/'
 
     if (!fs.existsSync(path)) {
-      fs.mkdirSync(path, { recursive: true });
+      fs.mkdirSync(path, { recursive: true })
     }
 
     const publicKey = fs.readFileSync(path + name + '.pub', 'utf8')

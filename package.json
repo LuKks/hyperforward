@@ -4,7 +4,7 @@
   "description": "Forward P2P E2E encrypted",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard"
   },
   "bin": {
     "hyperforward": "./bin.js"
@@ -33,12 +33,10 @@
   "dependencies": {
     "@hyperswarm/dht": "^5.0.12",
     "bind-easy": "^1.1.0",
-    "debug": "^4.3.2",
-    "express": "^4.17.1",
     "minimist": "^1.2.5",
-    "node-fetch": "^2.6.5",
-    "pump": "^3.0.0",
-    "simple-message-channels": "^1.2.1",
-    "utp-native": "^2.5.3"
+    "pump": "^3.0.0"
+  },
+  "devDependencies": {
+    "standard": "^16.0.4"
   }
 }

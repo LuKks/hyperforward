@@ -10,7 +10,6 @@ const os = require('os')
 const net = require('net')
 const pump = require('pump')
 const bind = require('bind-easy')
-const prompt = require('./like-prompt.js')
 
 // + fs promises
 // + avoid checking so much?
@@ -23,11 +22,11 @@ function Hyperforward () {
     return new Hyperforward()
   }
 
-	this.path = os.homedir() + '/.hyperforward/'
+  this.path = os.homedir() + '/.hyperforward/'
 
   // ensure base folder exists
   if (!fs.existsSync(this.path)) {
-    fs.mkdirSync(this.path, { recursive: true });
+    fs.mkdirSync(this.path, { recursive: true })
   }
 }
 
@@ -153,8 +152,8 @@ Hyperforward.prototype.rm = function (name) {
   }
 
   // not exists?
-  let existsPublicKey = fs.existsSync(this.path + name + '.pub')
-  let existsSecretKey = fs.existsSync(this.path + name)
+  const existsPublicKey = fs.existsSync(this.path + name + '.pub')
+  const existsSecretKey = fs.existsSync(this.path + name)
   if (!existsPublicKey && !existsSecretKey) {
     // throw new Error('The key pair not exists (' + this.path + name + ' and .pub)')
     return { deleted: false, existsPublicKey, existsSecretKey }
