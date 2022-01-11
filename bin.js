@@ -77,7 +77,7 @@ const bin = {
       throw new Error('The public key not exists (' + exists.publicKey + ')')
     }
 
-    const keyPair = hyperforward.keyget(name)
+    const keyPair = hyperforward.keyget(name, { format: 'hex' })
     if (keyPair.publicKey.length !== 64) {
       throw new Error('The public key should be 64 length of hex but it is ' + keyPair.publicKey.length)
     }
