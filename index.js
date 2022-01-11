@@ -10,6 +10,7 @@ const os = require('os')
 const net = require('net')
 const pump = require('pump')
 const bind = require('bind-easy')
+const path = require('path')
 
 // + fs promises
 // + avoid checking so much?
@@ -22,92 +23,117 @@ function Hyperforward () {
     return new Hyperforward()
   }
 
-  this.path = os.homedir() + '/.hyperforward/'
+  this.node = null
+  this.folder = path.join(os.homedir(), '.hyperforward')
 
   // ensure base folder exists
-  if (!fs.existsSync(this.path)) {
-    fs.mkdirSync(this.path, { recursive: true })
+  if (!fs.existsSync(this.folder)) {
+    fs.mkdirSync(this.folder, { recursive: true })
   }
 }
 
-Hyperforward.prototype.keygen = function (name) {
-  // check format
-  if (!name.length) {
-    throw new Error('Name is required')
-  }
-  if (name.length > 21) {
-    throw new Error('Name max length must be 21')
+Hyperforward.prototype.setupNode = function () {
+  if (this.node) {
+    return
   }
 
-  // avoid overwrite
-  if (fs.existsSync(this.path + name + '.pub')) {
-    throw new Error('The public key already exists (' + this.path + name + '.pub)')
-  }
-  if (fs.existsSync(this.path + name)) {
-    throw new Error('The secret key already exists (' + this.path + name + ')')
-  }
+  this.node = new DHT()
 
-  // generate
-  const keyPair = DHT.keyPair()
-  const secretKey = keyPair.secretKey.toString('hex')
-  const publicKey = keyPair.publicKey.toString('hex')
+  // handle ctrl+c
+  // + temp
+  process.once('SIGINT', () => {
+    this.node.destroy().then(function () {
+      process.exit()
+    })
+  })
+}
 
-  // save
-  fs.writeFileSync(this.path + name, secretKey + '\n')
-  fs.writeFileSync(this.path + name + '.pub', publicKey + '\n')
+// keypath('crst') // => { publicKey: null, secretKey: null }
+// keypath('crst') // => { publicKey: '/home/lucas/...', secretKey: null }
+Hyperforward.prototype.keypath = function (name) {
+  const filename = path.join(this.folder, name)
 
-  // + should use "seed" to easily avoid two files, etc
+  let publicKey = fs.existsSync(filename + '.pub') || null
+  let secretKey = fs.existsSync(filename) || null
+
+  if (publicKey) publicKey = filename + '.pub'
+  if (secretKey) secretKey = filename
 
   return { publicKey, secretKey }
 }
 
-Hyperforward.prototype.add = function (name, publicKey) {
-  // check format
-  if (!name.length) {
-    throw new Error('Name is required')
-  }
-  if (name.length > 21) {
-    throw new Error('Name max length must be 21')
-  }
-  if (publicKey.length !== 64) {
-    throw new Error('The public key must be 64 length of hex')
+// keyset('crst', { publicKey: '..' }) // writes key to disk
+// keyset('crst', { publicKey: <Buffer ..> })
+// keyset('crst', { secretKey: '..' })
+// keyset('crst', { publicKey: '..', secretKey: '..' })
+Hyperforward.prototype.keyset = function (name, keyPair = {}) {
+  const filename = path.join(this.folder, name)
+
+  if (keyPair.publicKey) {
+    fs.writeFileSync(filename + '.pub', this.buf2hex(keyPair.publicKey) + '\n')
   }
 
-  // avoid overwrite conflict
-  if (fs.existsSync(this.path + name)) {
-    throw new Error('Can\'t add or change a public key already paired with a secret key (' + this.path + name + ')')
+  if (keyPair.secretKey) {
+    fs.writeFileSync(filename, this.buf2hex(keyPair.secretKey) + '\n')
   }
-
-  // save
-  fs.writeFileSync(this.path + name + '.pub', publicKey + '\n', 'utf8')
 }
 
-Hyperforward.prototype.print = function (name) {
-  // check format
-  if (!name.length) {
-    throw new Error('Name is required')
-  }
-  if (name.length > 21) {
-    throw new Error('Name max length must be 21')
-  }
+// keyget('crst') // => { publicKey: null, secretKey: null }
+// keyget('crst') // => { publicKey: <Buffer ..>, secretKey: null }
+// keyget('crst', { format: 'hex' }) // => { publicKey: '..', secretKey: null }
+Hyperforward.prototype.keyget = function (name, opts = {}) {
+  let { publicKey, secretKey } = this.keypath(name)
 
-  // check if not exists
-  if (!fs.existsSync(this.path + name + '.pub')) {
-    // throw new Error('The public key not exists (' + this.path + name + '.pub)')
-    return null
-  }
+  if (publicKey) publicKey = fs.readFileSync(publicKey, 'utf8').trim()
+  if (secretKey) secretKey = fs.readFileSync(secretKey, 'utf8').trim()
 
-  // check saved format
-  const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
-  if (publicKey.length !== 64) {
-    throw new Error('The public key should be 64 length of hex but it is ' + publicKey.length)
+  if (opts.format === 'hex') {
+    return { publicKey, secretKey }
   }
-
-  return publicKey
+  return this.hex2buf({ publicKey, secretKey })
 }
 
+// keyrm('crst')
+Hyperforward.prototype.keyrm = function (name) {
+  const { publicKey, secretKey } = this.keypath(name)
+
+  if (publicKey) fs.unlinkSync(publicKey)
+  if (secretKey) fs.unlinkSync(secretKey)
+}
+
+// keygen() // => { publicKey: <Buffer ..>, secretKey: <Buffer ..> }
+// keygen({ format: 'hex' }) // => { publicKey: '..', secretKey: '..' }
+Hyperforward.prototype.keygen = function (opts = {}) {
+  const keyPair = DHT.keyPair()
+  if (opts.format === 'hex') {
+    return this.buf2hex(keyPair)
+  }
+  return keyPair
+}
+
+Hyperforward.prototype.buf2hex = function (key) {
+  if (typeof key === 'object' && key.publicKey && key.secretKey) {
+    return {
+      publicKey: this.buf2hex(key.publicKey),
+      secretKey: this.buf2hex(key.secretKey)
+    }
+  }
+  return typeof key !== 'string' ? key.toString('hex') : key
+}
+
+Hyperforward.prototype.hex2buf = function (key) {
+  if (typeof key === 'object' && key.publicKey && key.secretKey) {
+    return {
+      publicKey: this.hex2buf(key.publicKey),
+      secretKey: this.hex2buf(key.secretKey)
+    }
+  }
+  return typeof key === 'string' ? Buffer.from(key, 'hex') : key
+}
+
+// + temp
 Hyperforward.prototype.ls = function () {
-  const files = getFiles(this.path)
+  const files = getFiles(this.folder)
   const publicKeys = files.filter(file => file.endsWith('.pub')).map(publicKey => publicKey.substring(0, publicKey.length - 4))
   const secretKeys = files.filter(file => !file.endsWith('.pub'))
 
@@ -116,7 +142,8 @@ Hyperforward.prototype.ls = function () {
 
   for (let i = 0; i < secretKeys.length; i++) {
     const name = secretKeys[i]
-    const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
+    const filename = path.join(this.folder, name)
+    const publicKey = fs.readFileSync(filename + '.pub', 'utf8').trim()
     myKeyPairs.push({ name, publicKey })
   }
 
@@ -125,10 +152,11 @@ Hyperforward.prototype.ls = function () {
 
   for (let i = 0; i < publicKeys.length; i++) {
     const name = publicKeys[i]
+    const filename = path.join(this.folder, name)
     const hasSecretKey = secretKeys.indexOf(name) > -1
 
     if (!hasSecretKey) {
-      const publicKey = fs.readFileSync(this.path + name + '.pub', 'utf8').trim()
+      const publicKey = fs.readFileSync(filename + '.pub', 'utf8').trim()
       knownPeers.push({ name, publicKey })
     }
   }
@@ -142,107 +170,107 @@ Hyperforward.prototype.ls = function () {
   }
 }
 
-Hyperforward.prototype.rm = function (name) {
-  // check format
-  if (!name.length) {
-    throw new Error('Name is required')
-  }
-  if (name.length > 21) {
-    throw new Error('Name max length must be 21')
-  }
+Hyperforward.prototype.remote = async function (keyPair, hostname, publicKeys) {
+  this.setupNode()
 
-  // not exists?
-  const existsPublicKey = fs.existsSync(this.path + name + '.pub')
-  const existsSecretKey = fs.existsSync(this.path + name)
-  if (!existsPublicKey && !existsSecretKey) {
-    // throw new Error('The key pair not exists (' + this.path + name + ' and .pub)')
-    return { deleted: false, existsPublicKey, existsSecretKey }
-  }
-
-  // delete public key in case it exists
-  if (existsPublicKey) {
-    try {
-      fs.unlinkSync(this.path + name + '.pub')
-    } catch (error) {
-      throw error
-    }
-  }
-
-  // delete secret key in case it exists
-  if (existsSecretKey) {
-    try {
-      fs.unlinkSync(this.path + name)
-    } catch (error) {
-      throw error
-    }
-  }
-
-  return { deleted: true, existsPublicKey, existsSecretKey }
-}
-
-Hyperforward.prototype.remote = async function (keyPair, remoteAddress, allowedPeers) {
-  // + should have a reusable dht in the constructor?
-
-  // start node
-  const node = new DHT({
-    keyPair
-  })
-
-  // handle ctrl+c
-  // + not ready for multiple instances in same process
-  process.once('SIGINT', function () {
-    node.destroy().then(function () {
-      process.exit()
-    })
-  })
-
-  // await node.ready()
-
-  // remote forward
-  const server = node.createServer({
-    firewall (remotePublicKey, remoteHandshakePayload) {
-      for (const publicKey of allowedPeers) {
-        if (publicKey === '*' || remotePublicKey.equals(publicKey)) {
-          return false
-        }
-      }
-      return true
-    }
+  const server = this.node.createServer({
+    firewall: Hyperforward.parseFirewall(publicKeys)
   })
 
   server.on('connection', function (socket) {
-    pump(socket, net.connect(remoteAddress.port, remoteAddress.address), socket)
+    pump(socket, net.connect(hostname.port, hostname.address), socket)
   })
 
   await server.listen(keyPair)
 
-  return { node, server }
+  return server
 }
 
-Hyperforward.prototype.local = async function (keyPair, localAddress, serverPublicKey) {
-  // start node
-  const node = new DHT({
-    keyPair
+Hyperforward.prototype.local = async function (keyPair, hostname, serverPublicKey) {
+  this.setupNode()
+
+  const server = await bind.tcp(hostname.port, { address: hostname.address, allowAny: false })
+
+  server.on('connection', (socket) => {
+    pump(socket, this.node.connect(serverPublicKey, { keyPair }), socket)
   })
 
-  // handle ctrl+c
-  // + not ready for multiple instances in same process
-  process.once('SIGINT', function () {
-    node.destroy().then(function () {
-      process.exit()
-    })
-  })
-
-  // await node.ready()
-
-  // local forward
-  const server = await bind.tcp(localAddress.port, { address: localAddress.address, allowAny: false })
-
-  server.on('connection', function (socket) {
-    pump(socket, node.connect(Buffer.from(serverPublicKey[0], 'hex')), socket)
-  })
-
-  return { node, server }
+  return server
 }
 
-module.exports = Hyperforward()
+// name2keys('') // => (() => false)
+// name2keys(null) // => (() => false)
+// name2keys(true) // => (() => false)
+// name2keys('crst') // => [<Buffer ..>]
+// name2keys('crst,lukks') // => [<Buffer ..>, <Buffer ..>]
+// name2keys('crst,lukks', { format: 'hex' }) // => ['..', '..']
+// name2keys(['crst', 'lukks']) // => [<Buffer ..>, <Buffer ..>]
+Hyperforward.prototype.name2keys = function (keys, opts = {}) {
+  if (!keys || typeof keys === 'boolean') {
+    return []
+  }
+
+  if (!Array.isArray(keys)) {
+    keys = keys.toString() // in case: --firewall 50
+    keys = keys.split(',') // => [ 'crst', 'lukks' ]
+  }
+
+  const publicKeys = []
+
+  for (const key of keys) {
+    // public key
+    if (key.length > 21) {
+      publicKeys.push(this.hex2buf(key))
+      continue
+    }
+
+    // name
+    const { publicKey } = this.keyget(key)
+    if (!publicKey) {
+      throw new Error('Key ' + key + ' not exists')
+    }
+    // + opts.prompt
+
+    publicKeys.push(publicKey)
+  }
+
+  if (opts.format === 'hex') {
+    return publicKeys.map(this.buf2hex)
+  }
+
+  return publicKeys
+}
+
+// parseFirewall() // () => false
+// parseFirewall([]) // () => false
+// parseFirewall(['pub1', 'pub2']) // function (..) {..}
+Hyperforward.parseFirewall = function (publicKeys) {
+  if (!publicKeys || !publicKeys.length) {
+    return () => false
+  }
+
+  return function (remotePublicKey, remoteHandshakePayload) {
+    for (const publicKey of publicKeys) {
+      if (publicKey === '*' || remotePublicKey.equals(publicKey)) {
+        return false
+      }
+    }
+    return true
+  }
+}
+
+Hyperforward.parseHostname = function (hostname) {
+  let [address, port] = hostname.split(':') // => [ '127.0.0.1', '4001' ]
+  // valid ports: [tcp: 1-65535] [udp: 0-65535 (optional)]
+  // + should support udp port with --udp
+  port = parseInt(port)
+  if (!address || !port) {
+    return -1 // invalid address:port
+  }
+  if (port < 1 || port > 65535) {
+    return -2 // invalid port range
+  }
+  return { address, port }
+}
+
+module.exports = Hyperforward

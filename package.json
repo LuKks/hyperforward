@@ -37,6 +37,7 @@
     "pump": "^3.0.0"
   },
   "devDependencies": {
+    "express": "^4.17.2",
     "standard": "^16.0.4"
   }
 }
