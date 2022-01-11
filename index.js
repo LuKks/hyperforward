@@ -1,9 +1,3 @@
-/*
-const hyperforward = require('hyperforward')
-
-hyperforward.keygen('lukks')
-*/
-
 const DHT = require('@hyperswarm/dht')
 const fs = require('fs')
 const os = require('os')
