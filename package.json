@@ -1,6 +1,6 @@
 {
   "name": "hyperforward",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Forward P2P E2E encrypted",
   "main": "index.js",
   "scripts": {
