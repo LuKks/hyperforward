@@ -60,7 +60,7 @@ hyperforward rm [name]
 ```
 
 #### Sharing multiple services
-There is a security limitation: you can only use **one key per forward**.
+There is a security limitation: you can only use **one key per forward**.\
 You still reuse a single key (ie. lukks, cristian, etc) to easily set firewalls.
 
 Let's say you have multiple things going on:
