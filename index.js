@@ -5,6 +5,7 @@ const net = require('net')
 const pump = require('pump')
 const bind = require('bind-easy')
 const path = require('path')
+const debug = require('debug')('hyperforward')
 
 // + fs promises
 // + avoid checking so much?
@@ -175,6 +176,10 @@ Hyperforward.prototype.ls = function () {
 }
 
 Hyperforward.prototype.remote = async function (keyPair, hostname, publicKeys) {
+  debug('remote keyPair', keyPair)
+  debug('remote hostname', hostname)
+  debug('remote publicKeys', publicKeys)
+
   this.setupNode()
 
   const server = this.node.createServer({
@@ -191,6 +196,10 @@ Hyperforward.prototype.remote = async function (keyPair, hostname, publicKeys) {
 }
 
 Hyperforward.prototype.local = async function (keyPair, hostname, serverPublicKey) {
+  debug('local keyPair', keyPair)
+  debug('local hostname', hostname)
+  debug('local serverPublicKey', serverPublicKey)
+
   this.setupNode()
 
   const server = await bind.tcp(hostname.port, { address: hostname.address, allowAny: false })
