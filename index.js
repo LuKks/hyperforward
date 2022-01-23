@@ -106,22 +106,32 @@ Hyperforward.prototype.keygen = function (opts = {}) {
 }
 
 Hyperforward.prototype.buf2hex = function (key) {
-  if (typeof key === 'object' && key.publicKey && key.secretKey) {
+  if (key && typeof key === 'object') {
     return {
       publicKey: this.buf2hex(key.publicKey),
       secretKey: this.buf2hex(key.secretKey)
     }
   }
+
+  if (!key) {
+    return key
+  }
+
   return typeof key !== 'string' ? key.toString('hex') : key
 }
 
 Hyperforward.prototype.hex2buf = function (key) {
-  if (typeof key === 'object' && key.publicKey && key.secretKey) {
+  if (key && typeof key === 'object') {
     return {
       publicKey: this.hex2buf(key.publicKey),
       secretKey: this.hex2buf(key.secretKey)
     }
   }
+
+  if (!key) {
+    return key
+  }
+
   return typeof key === 'string' ? Buffer.from(key, 'hex') : key
 }
 
