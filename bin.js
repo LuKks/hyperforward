@@ -129,7 +129,7 @@ const bin = {
     // clean args // + windows: replace to keep only alphanumeric chars
     let hostname = (argv._[1] || '').trim()
     const name = (argv.key || '').trim()
-    let firewall = (argv.firewall || '').trim()
+    const firewall = (argv.firewall || '').trim()
 
     // parse and validate args
     hostname = Hyperforward.parseHostname(hostname)
@@ -148,9 +148,9 @@ const bin = {
 
     const keyPair = name ? hyperforward.keyget(name) : hyperforward.keygen()
 
-    firewall = hyperforward.name2keys(firewall)
+    const publicKeys = hyperforward.name2keys(firewall)
 
-    hyperforward.remote(keyPair, hostname, firewall).then(function () {
+    hyperforward.remote(keyPair, hostname, publicKeys).then(function () {
       console.log('Use this ' + (!name ? 'temporal ' : '') + 'public key to connect:')
       console.log(keyPair.publicKey.toString('hex'))
       // console.log('Listening on:', server.address().address + ':' + server.address().port)
