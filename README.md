@@ -72,30 +72,30 @@ Let's say you have multiple things going on:
 1) **Each service should have their own key pair:**
 
 ```bash
-hyperforward keygen http-1
-hyperforward keygen vnc-1
-hyperforward keygen proxy-1
+hyperforward keygen http1
+hyperforward keygen vnc1
+hyperforward keygen proxy1
 ```
 
 2) **Normal remote forward each one:**
 
 _In this case, only certain people should be able to use the private VNC service._
 ```bash
-hyperforward remote 127.0.0.1:3000 --key http-1
-hyperforward remote 127.0.0.1:4001 --key vnc-1 --firewall cristian,lukks
-hyperforward remote 127.0.0.1:1090 --key proxy-1
+hyperforward remote 127.0.0.1:3000 --key http1
+hyperforward remote 127.0.0.1:4001 --key vnc1 --firewall cristian,lukks
+hyperforward remote 127.0.0.1:1090 --key proxy1
 ```
 
 3) **Other peers can connect to your services:**
 
 Let's say "lukks" would like to use your VNC (as he's authorized):
 ```bash
-hyperforward local 127.0.0.1:4001 --key lukks --connect vnc-1
+hyperforward local 127.0.0.1:4001 --key lukks --connect vnc1
 ```
 
 Later, anyone would like to use your proxy:
 ```bash
-hyperforward local 127.0.0.1:1090 --connect proxy-1
+hyperforward local 127.0.0.1:1090 --connect proxy1
 ```
 
 ## License
