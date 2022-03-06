@@ -31,7 +31,7 @@
     "dht"
   ],
   "dependencies": {
-    "@hyperswarm/dht": "^5.0.12",
+    "@hyperswarm/dht": "^5.0.17",
     "bind-easy": "^1.1.0",
     "debug": "^4.3.3",
     "minimist": "^1.2.5",
