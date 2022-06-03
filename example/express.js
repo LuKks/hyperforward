@@ -12,5 +12,5 @@ app.get('/', function (req, res) {
 
 const server = app.listen(2999) // 192.168.0.23
 
-server.keepAliveTimeout = 600 * 1000
-server.headersTimeout = 601 * 1000 // https://github.com/nodejs/node/issues/27363
+// server.keepAliveTimeout = 600 * 1000
+// server.headersTimeout = 601 * 1000 // https://github.com/nodejs/node/issues/27363
