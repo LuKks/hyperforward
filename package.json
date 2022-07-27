@@ -1,6 +1,6 @@
 {
   "name": "hyperforward",
-  "version": "0.6.5",
+  "version": "1.0.0",
   "description": "CLI and library to forward peer-to-peer end-to-end encrypted connections",
   "main": "index.js",
   "scripts": {
