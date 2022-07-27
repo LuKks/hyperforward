@@ -1,12 +1,34 @@
 # hyperforward
 
-Forward P2P E2E encrypted
+CLI and library to forward peer-to-peer end-to-end encrypted connections.
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
 ## Install
 ```
 npm i -g hyperforward
+```
+
+## Usage
+```shell
+Usage: hyperforward [options] [command]
+
+CLI to forward P2P E2E encrypted connections
+
+Options:
+  -v, --version                Output the current version
+  -h, --help                   display help for command
+
+Commands:
+  remote [options] <hostname>  Create a P2P server that forwards to a remote hostname
+  local [options] <hostname>   Create a local server that forwards to a P2P server
+  keygen <name>                Create a seed key by name
+  add <name> <public key>      Add a known public key by name
+  rm <name>                    Remove a key by name
+  print <name>                 Print the public key by name
+  ls                           List my own keys and known peers
+  migrate [options]            Migrate old keys to the new directory and format
+  help [command]               display help for command
 ```
 
 ### Examples
@@ -48,16 +70,8 @@ hyperforward remote 127.0.0.1:3000 --key lukks --firewall cristian
 hyperforward local 127.0.0.1:8080 --key cristian --connect lukks
 ```
 
-### More
-```bash
-hyperforward remote [ip:port] --key [name] --firewall [names or public keys comma separated]
-hyperforward local [ip:port] --key [name] --connect [name or public key]
-hyperforward keygen [name]
-hyperforward add [name] [public_key]
-hyperforward print [name]
-hyperforward ls
-hyperforward rm [name]
-```
+`--firewall` is a list of names or public keys comma separated.\
+`--connect` can be a name or public key.
 
 #### Sharing multiple services
 There is a security limitation: you can only use **one key per forward**.\
@@ -77,7 +91,7 @@ hyperforward keygen vnc1
 hyperforward keygen proxy1
 ```
 
-2) **Normal remote forward each one:**
+2) **Remote forward each one:**
 
 _In this case, only certain people should be able to use the private VNC service._
 ```bash
@@ -88,7 +102,7 @@ hyperforward remote 127.0.0.1:1090 --key proxy1
 
 3) **Other peers can connect to your services:**
 
-Let's say "lukks" would like to use your VNC (as he's authorized):
+Let's say "lukks" would like to use the VNC (as he's authorized):
 ```bash
 hyperforward local 127.0.0.1:4001 --key lukks --connect vnc1
 ```
@@ -99,4 +113,4 @@ hyperforward local 127.0.0.1:1090 --connect proxy1
 ```
 
 ## License
-Code released under the [MIT License](https://github.com/LuKks/hyperforward/blob/master/LICENSE).
+MIT
