@@ -9,6 +9,7 @@ Forward peer-to-peer end-to-end encrypted
 npm i -g hyperforward
 ```
 
+## Usage
 ```shell
 Usage: hyperforward [options] [command]
 
