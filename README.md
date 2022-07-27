@@ -1,6 +1,6 @@
 # hyperforward
 
-Forward peer-to-peer end-to-end encrypted
+CLI and library to forward peer-to-peer end-to-end encrypted connections
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 

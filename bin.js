@@ -13,7 +13,7 @@ const package = require('./package.json')
 
 program
   .name('hyperforward')
-  .description('CLI to manage forwards P2P E2E encrypted')
+  .description('CLI to forward P2P E2E encrypted connections')
   .version(package.version, '-v, --version', 'Output the current version')
   // .action(async function () {})
 
