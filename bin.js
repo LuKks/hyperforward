@@ -2,7 +2,7 @@
 
 const { Command } = require('commander')
 
-const list = ['remote', 'local', 'keygen', 'add', 'rm', 'print', 'ls']
+const list = ['remote', 'local', 'keygen', 'add', 'rm', 'print', 'ls', 'migrate']
 const actions = {}
 for (const name of list) {
   actions[name] = require('./actions/' + name + '.js')
@@ -55,5 +55,10 @@ program.command('print')
 program.command('ls')
   .description('List my own keys and known peers')
   .action(actions.ls)
+
+program.command('migrate')
+  .description('Migrate old keys to the new directory and format')
+  .option('--old-dir <old path>', 'Old directory path where keys are at')
+  .action(actions.migrate)
 
 program.parseAsync()
