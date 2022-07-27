@@ -13,7 +13,7 @@ npm i -g hyperforward
 ```shell
 Usage: hyperforward [options] [command]
 
-CLI to manage forwards P2P E2E encrypted
+CLI to forward P2P E2E encrypted connections
 
 Options:
   -v, --version                Output the current version
