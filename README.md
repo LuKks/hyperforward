@@ -1,6 +1,6 @@
 # hyperforward
 
-Forward P2P E2E encrypted
+Forward peer-to-peer end-to-end encrypted
 
 ![](https://img.shields.io/npm/v/hyperforward.svg) ![](https://img.shields.io/npm/dt/hyperforward.svg) ![](https://img.shields.io/github/license/LuKks/hyperforward.svg)
 
@@ -77,7 +77,7 @@ hyperforward keygen vnc1
 hyperforward keygen proxy1
 ```
 
-2) **Normal remote forward each one:**
+2) **Remote forward each one:**
 
 _In this case, only certain people should be able to use the private VNC service._
 ```bash
@@ -88,7 +88,7 @@ hyperforward remote 127.0.0.1:1090 --key proxy1
 
 3) **Other peers can connect to your services:**
 
-Let's say "lukks" would like to use your VNC (as he's authorized):
+Let's say "lukks" would like to use the VNC (as he's authorized):
 ```bash
 hyperforward local 127.0.0.1:4001 --key lukks --connect vnc1
 ```
@@ -99,4 +99,4 @@ hyperforward local 127.0.0.1:1090 --connect proxy1
 ```
 
 ## License
-Code released under the [MIT License](https://github.com/LuKks/hyperforward/blob/master/LICENSE).
+MIT

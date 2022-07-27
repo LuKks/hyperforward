@@ -1,7 +1,7 @@
 {
   "name": "hyperforward",
   "version": "0.6.5",
-  "description": "Forward P2P E2E encrypted",
+  "description": "Forward peer-to-peer end-to-end encrypted",
   "main": "index.js",
   "scripts": {
     "test": "standard"
@@ -31,10 +31,10 @@
     "dht"
   ],
   "dependencies": {
-    "@hyperswarm/dht": "^5.0.12",
-    "bind-easy": "^1.1.0",
-    "debug": "^4.3.3",
-    "minimist": "^1.2.5",
+    "@hyperswarm/dht": "^5.0.25",
+    "commander": "^9.4.0",
+    "graceful-goodbye": "^1.0.0",
+    "hyperkeys": "^0.1.1",
     "pump": "^3.0.0"
   },
   "devDependencies": {
