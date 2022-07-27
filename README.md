@@ -9,6 +9,27 @@ Forward peer-to-peer end-to-end encrypted
 npm i -g hyperforward
 ```
 
+```shell
+Usage: hyperforward [options] [command]
+
+CLI to manage forwards P2P E2E encrypted
+
+Options:
+  -v, --version                Output the current version
+  -h, --help                   display help for command
+
+Commands:
+  remote [options] <hostname>  Create a P2P server that forwards to a remote hostname
+  local [options] <hostname>   Create a local server that forwards to a P2P server
+  keygen <name>                Create a seed key by name
+  add <name> <public key>      Add a known public key by name
+  rm <name>                    Remove a key by name
+  print <name>                 Print the public key by name
+  ls                           List my own keys and known peers
+  migrate [options]            Migrate old keys to the new directory and format
+  help [command]               display help for command
+```
+
 ### Examples
 #### Public connection
 Already having a server (TCP, HTTP, SOCKS, VNC, etc) running in your computer o remotely:
@@ -48,16 +69,8 @@ hyperforward remote 127.0.0.1:3000 --key lukks --firewall cristian
 hyperforward local 127.0.0.1:8080 --key cristian --connect lukks
 ```
 
-### More
-```bash
-hyperforward remote [ip:port] --key [name] --firewall [names or public keys comma separated]
-hyperforward local [ip:port] --key [name] --connect [name or public key]
-hyperforward keygen [name]
-hyperforward add [name] [public_key]
-hyperforward print [name]
-hyperforward ls
-hyperforward rm [name]
-```
+`--firewall` is a list of names or public keys comma separated.\
+`--connect` can be a name or public key.
 
 #### Sharing multiple services
 There is a security limitation: you can only use **one key per forward**.\
