@@ -28,16 +28,12 @@ async function command (options) {
 
     const exists = hyperkeys.exists(name)
 
-    if (publicKey) {
-      if (!exists.publicKey) {
-        hyperkeys.set(name, { publicKey })
-      }
+    if (publicKey && !exists.publicKey) {
+      hyperkeys.set(name, { publicKey })
     }
 
-    if (secretKey) {
-      if (!exists.secretKey) {
-        hyperkeys.set(name, { secretKey })
-      }
+    if (secretKey && !exists.secretKey) {
+      hyperkeys.set(name, { secretKey })
     }
 
     // this is a bit confusing but it just to avoid doing double logs
