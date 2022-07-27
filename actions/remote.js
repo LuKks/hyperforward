@@ -18,7 +18,7 @@ async function command (hostname, options = {}) {
   let keys = hyperkeys.get(name)
   if (name) {
     if (keys.publicKey && !keys.secretKey) errorAndExit('You don\'t have the seed or secret key of ' + name)
-    if (!keys.publicKey && !keys.secretKey) errorAndExit('The keys does not exists')
+    if (!keys.publicKey && !keys.secretKey) errorAndExit('The keys (' + name + ') does not exists')
   } else {
     keys = Hyperkeys.keyTriad()
   }
