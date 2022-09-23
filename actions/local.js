@@ -1,4 +1,4 @@
-const Hyperkeys = require('hyperkeys')
+const Hyperkeys = require('edkeys')
 const Hyperforward = require('../index.js')
 const goodbye = require('graceful-goodbye')
 const { hyperkeys, parseHostname, name2keys, errorAndExit } = require('../util.js')

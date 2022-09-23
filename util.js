@@ -1,4 +1,4 @@
-const Hyperkeys = require('hyperkeys')
+const Hyperkeys = require('edkeys')
 
 const hyperkeys = new Hyperkeys()
 
