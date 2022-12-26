@@ -31,8 +31,8 @@
     "dht"
   ],
   "dependencies": {
-    "@hyperswarm/dht": "^5.0.25",
-    "commander": "^9.4.0",
+    "@hyperswarm/dht": "^6.4.0",
+    "commander": "^9.4.1",
     "edkeys": "^0.1.2",
     "graceful-goodbye": "^1.0.0",
     "pump": "^3.0.0"
